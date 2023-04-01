@@ -32,6 +32,7 @@ class Tail:
         self.bgrid = bgrid
         self.nov = bgrid.nov
         self.vk2dic = vk2dic
+        self.cvsats = {}
         self.split_sats = []
         self.combos = []
         # vk2-bdic : all vk1s will be removed in sort_vks
@@ -39,6 +40,14 @@ class Tail:
         self.bchecker = BlockChecker(self)
         if block_bv_dic != None:  # block_bv_dic==None: for clone
             self.sort_vks(vk2dic)
+            for b, satdic in block_bv_dic.items():
+                for bv, bcvs in satdic.items():
+                    if bv != 'kn':
+                        v, cvs = bv, bcvs
+                        for cv in cvs:
+                            dic = self.cvsats.setdefault(cv, {})
+                            dic.setdefault('*',[]).append({b: int(not v)})
+                x = 0
             self.blbmgr = BlbManager(self, block_bv_dic) 
         tuple_lst = self.proc_pairs()
         if tuple_lst:

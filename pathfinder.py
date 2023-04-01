@@ -9,6 +9,8 @@ class PathFinder:
         self.sumbdic = branch.sumbdic
         self.sat = branch.sat
         self.cluster_groups = Cluster.groups
+        for nv in self.branch.novs:
+            self.tails[nv].bchecker.make_cvsats()
         self.grow_cluster(60)
         hit_cnt = self.downwards()
         self.find_path()

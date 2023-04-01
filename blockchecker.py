@@ -6,6 +6,21 @@ class BlockChecker:
         self.checkdic = {}
         self.block_dic = {}
 
+    def make_cvsats(self):
+        for vbit, d in self.checkdic.items():
+            for bv, lst in d.items():
+                for dd in lst:
+                    if len(dd) > 2: # length: 3
+                        # ke: (kn, C0011), e1: (60:{1,2,3}), e2: (21,{3,4})
+                        ke, e1, e2 = list(dd.items())
+                        for cv in e1[1]:
+                            cvd = self.tail.cvsats.setdefault(cv,{})
+                            nvlst = cvd.setdefault(e2[0],[])
+                            nvlst.append((e2[1],ke[1], {vbit: int(not bv)}))
+                x = 0
+            x = 8
+        x = 9
+
     def build_checkdic(self):
         for lower_nov, entry in self.tail.blbmgr.cbdic.items():
             for kn, tp in entry.items():

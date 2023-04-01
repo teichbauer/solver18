@@ -1,3 +1,6 @@
+## 2023-04-01->0.403
+- tail.cvsats={}, filled by tail.bchecker of type BlockerChecker
+- BlockChecker.make_cvsats: transfer dat in checkdic to tail.cvsats
 ## 2023-03-30->0.402
 - solver18
 ## 2023-03-30->0.401
