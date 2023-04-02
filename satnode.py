@@ -110,7 +110,6 @@ class SatNode:
                                 self.vkm)
             return self.next.spawn()
         else:
-            # Center.root_branch.show_chain()
             Center.minnov = self.nov
             nv = Center.maxnov
             while nv >= self.nov:
@@ -121,9 +120,8 @@ class SatNode:
                 tail.bchecker.build_checkdic()
                 Center.add_blocks(nv, tail.bchecker)
                 nv -= 3
-            pfinder = PathFinder(Center.root_branch)
+            pfinder = PathFinder()
             pfinder.find_solutions()
-            # Center.root_branch.split()
             x = 1
 
     def path_sat(self, pname):

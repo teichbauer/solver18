@@ -5,6 +5,7 @@ class BlockChecker:
         self.tail = tail
         self.checkdic = {}
         self.block_dic = {}
+        self.block_refs = []  # ele: ((lower-tail-cvs), <kn>, <sat-dic>)
 
     def make_cvsats(self):
         for vbit, d in self.checkdic.items():
@@ -13,10 +14,12 @@ class BlockChecker:
                     if len(dd) > 2: # length: 3
                         # ke: (kn, C0011), e1: (60:{1,2,3}), e2: (21,{3,4})
                         ke, e1, e2 = list(dd.items())
+                        entry = (e2[1], ke[1], {vbit: int(not bv)})
+                        self.block_refs.append(entry)
                         for cv in e1[1]:
                             cvd = self.tail.cvsats.setdefault(cv,{})
                             nvlst = cvd.setdefault(e2[0],[])
-                            nvlst.append((e2[1],ke[1], {vbit: int(not bv)}))
+                            nvlst.append(entry)
                 x = 0
             x = 8
         x = 9

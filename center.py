@@ -14,7 +14,7 @@ class Center:
     sumbdic = {}
     vk2bdic = {}  # <bit>:[<tail1>,<tail2>,...], <bit>:[],..}
     orig_vkm = None
-    root_branch = None
+    tails = {}
 
     # 8 sats:
     @classmethod

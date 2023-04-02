@@ -3,22 +3,32 @@ from cluster import Cluster
 from basics import sortdic, print_bitdic, print_clause_dic, test_clauses
 
 class PathFinder:
-    def __init__(self, branch):
-        self.branch = branch
-        self.tails = {nv: branch.chain[nv] for nv in Center.snodes}
-        self.sumbdic = branch.sumbdic
-        self.sat = branch.sat
+    def __init__(self):
         self.cluster_groups = Cluster.groups
-        for nv in self.branch.novs:
-            self.tails[nv].bchecker.make_cvsats()
+        for nv in sorted(Center.tails):
+            Center.tails[nv].bchecker.make_cvsats()
+        self.grow_pairs(60)
+        
         self.grow_cluster(60)
         hit_cnt = self.downwards()
         self.find_path()
 
+    def grow_pairs(self, hnv):  # paring layers: high-nov to lower-nov
+        while hnv >= Center.minnov:
+            if hnv == Center.minnov:
+                break
+            highlayer, lowlayer = Center.tails[hnv], Center.tails[hnv-3]
+            for cv, cvn2 in highlayer.cvn2s.items():
+                cluster = Cluster((hnv, cv), cvn2)
+                Cluster.clusters[hnv] = cluster
+                cluster.grow(lowlayer)
+            hnv -= 6
+        x = 9
+
     def grow_cluster(self, tail_nv):
         while tail_nv > Center.minnov:
-            tail = self.tails[tail_nv]
-            ntail = self.tails[tail_nv - 3]
+            tail = Center.tails[tail_nv]
+            ntail = Center.tails[tail_nv - 3]
             for cv, cvn2 in tail.cvn2s.items():
                 cluster = Cluster((tail.nov,cv), cvn2)
                 Cluster.clusters[tail_nv] = cluster
@@ -83,7 +93,7 @@ class PathFinder:
 
         nv = clustr.nov - 6
         while nv >= Center.minnov:
-            res = test_clauses(self.tails[nv].vk2dic, clustr.sat)
+            res = test_clauses(Center.tails[nv].vk2dic, clustr.sat)
             nv -= 3
 
         ind = 0

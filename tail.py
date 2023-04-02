@@ -1,6 +1,5 @@
 from blbmgr import BlbManager
 from center import Center
-from branch import Branch
 from blockchecker import BlockChecker
 from cvnode2 import CVNode2
 from hashlib import md5
@@ -33,7 +32,6 @@ class Tail:
         self.nov = bgrid.nov
         self.vk2dic = vk2dic
         self.cvsats = {}
-        self.split_sats = []
         self.combos = []
         # vk2-bdic : all vk1s will be removed in sort_vks
         self.bdic = self.copy_bdic(bitdic)
@@ -53,9 +51,7 @@ class Tail:
         if tuple_lst:
             self.pair2blocker(tuple_lst)
         self.eval_combos()
-        if Center.root_branch == None:
-            Center.root_branch = Branch(None)
-        Center.root_branch.add_tail(self.nov, self)
+        Center.tails[self.nov] = self
         # generate: self.node2s and self.cvn2s
         self.generate_n2s(n2sat_dic)
 
@@ -78,8 +74,8 @@ class Tail:
         return vk
     
     def generate_n2s(self, sat_dic):
-        self.node2s = {}    # {<key>: cvnode2, ...}
-        self.cvn2s  = {}    # {<cv>: cvnode2(ref),.. }
+        self.node2s = {}  # {<key>: cvnode2, ...} key: md5 from kns of a cv
+        self.cvn2s  = {}  # {<cv>: cvnode2(ref),.. }
         for chv in self.bgrid.chvset:
             m = md5()
             m.update(str(sorted(self.cvks_dic[chv])).encode('utf-8'))
@@ -104,20 +100,6 @@ class Tail:
                         return
             self.cvn2s[chv] = n2
         x = 0
-
-    def clone(self, split_sat_tpl):
-        ntail = Tail(
-            self.bgrid, 
-            self.vk2dic.copy(),
-            self.copy_bdic(self.bdic)
-        )
-        ntail.cvks_dic = self.copy_cvks_dic(self.cvks_dic)
-        ntail.blbmgr = BlbManager(ntail) # self.blbmgr.clone(ntail)
-        ntail.blbmgr.block_bv_dic = self.blbmgr.clone_block_bv_dic()
-        ntail.split_sats = self.split_sats
-        ntail.split_sats.append(split_sat_tpl)
-        ntail.blbmgr.add_split_sat(split_sat_tpl)
-        return ntail
 
     def proc_pairs(self):
         # find pairs of vk2s (vka, vka) bitting on the same 2 bits, and
@@ -229,30 +211,6 @@ class Tail:
 
         self.blbmgr.add_block_bv_dic(block_bv_dic)
 
-
-    def bdic_info(self):
-        bs = sorted(self.bdic)
-        msg = ''
-        for b in bs:
-            msg += f"{b}: {self.bdic[b]}\n"
-        return msg
-
-    def cvk_info(self, cv):
-        msg = f'{self.nov}.{cv}({len(self.cvks_dic[cv])}X vks):\n'
-        bdic = {}
-        kns = sorted(self.cvks_dic[cv])
-        for kn in kns:
-            vk = self.vk2dic[kn]
-            for b in vk.dic:
-                bdic.setdefault(b, []).append(kn)
-            msg += f'{kn}:{vk.dic}({vk.cvs})\n'
-        msg += '-'* 40 + '\n'
-        bks = sorted(bdic.keys())
-        for bk in bks:
-            msg += f" {bk}: {bdic[bk]}\n"
-        print(msg)
-
-
     def add_vk2(self, vk2):
         self.vk2dic[vk2.kname] = vk2
         for cv in vk2.cvs:
@@ -275,27 +233,3 @@ class Tail:
         for cv, val in cvks_dic.items():
             dic[cv] = set(val)
         return dic
-
-    def cvfoot_print(self, cv):
-        vkdic = {}
-        bdic = {}
-        for kn in self.cvks_dic[cv]:
-            vk = self.etail.vk2dic[kn]
-            vkdic[kn] = vk
-            for b, v in vk.dic.items():
-                bdic.setdefault(b, set([])).add(kn)
-        return vkdic, bdic
-
-    def metrics(self):
-        dic = {
-            'vk2s': len(self.vk2dic),
-            'bdic': len(self.bdic),
-        }
-        len1 = len(self.vk2dic)
-        len2 = len(self.bdic)
-        for cv, lst in self.cvks_dic.items():
-            dic.setdefault(cv, len(lst))
-        msg = f"{self.nov}/{self.split_sats}: vk2dic:{len1}, 'bdic:{len2}\n"
-        msg += self.bdic_info()
-        msg += f"{dic}, \nblbmap: {self.blbmgr.block_bv_dic}.\n"
-        return msg

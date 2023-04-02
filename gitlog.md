@@ -1,3 +1,8 @@
+## 2023-04-01->0.404
+- get rid of branch, Center.tails = {} replace Center.root_branch
+- clean up tail a bit
+- pathfinder.grow_pairs to replace .grow
+- BlockChecker.block_refs
 ## 2023-04-01->0.403
 - tail.cvsats={}, filled by tail.bchecker of type BlockerChecker
 - BlockChecker.make_cvsats: transfer dat in checkdic to tail.cvsats
