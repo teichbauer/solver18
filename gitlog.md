@@ -1,3 +1,8 @@
+## 2023-04-03->0.406
+- tail: no more n2sat_dic .generate_n2s()
+- no n2sat_dic in satnode for making tail
+- pathfinder: refactor grow_pairs
+- cluster: progress
 ## 2023-04-02->0.405
 - cluster.grow_with_filter
 - PathFinder.grow_pairs using cluster.grow_with_filter

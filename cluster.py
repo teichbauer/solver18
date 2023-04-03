@@ -13,7 +13,10 @@ class Cluster(PathNode):
             self.n2 = n2node.n2
             self.nov = n2node.nov
             self.tail1 = n2node.tail1
-            self.tail2 = n2node.tail2
+            if 'tail2' in n2node.__dict__:
+                self.tail2 = n2node.tail2
+            else:
+                self.tail2 = None
             self.sat = {b: v for b, v in n2node.sat.items()}
             self.bitdic = {b:s.copy() for b, s in n2node.bitdic.items() }
             self.clauses = n2node.clauses.copy()
@@ -24,6 +27,7 @@ class Cluster(PathNode):
         # type(n2node) == CVNode2
         self.n2 = n2node
         self.tail1 = n2node.tail
+        self.headsatbits = n2node.tail.bgrid.bitset.copy()
         self.nov = n2node.tail.nov
         bdic = {b:s.copy() for b, s in n2node.bitdic.items()}
         super().__init__(n2node.sat.copy(), bdic, n2node.clauses.copy())
@@ -31,7 +35,7 @@ class Cluster(PathNode):
         self.block = Blocker(self)
 
     def clone(self):  # only for grown cluster (with 2 tails: tail1, tail2)
-        clu = Cluster(self.name.copy(), self)
+        clu = Cluster(tuple(self.name), self)
         return clu
     
     def remove_clause(self, kn):
@@ -50,20 +54,34 @@ class Cluster(PathNode):
         for cl in n2.clauses.values():
             if not self.add_k2(cl):
                 return None
-        self.headsatbits = self.tail1.bgrid.bitset.union(self.tail2.bgrid.bitset)
-        return self
+        self.headsatbits = self.headsatbits.union(self.tail2.bgrid.bitset)
+        rsat = {}
+        for b,sv in self.sat.items():
+            if b not in self.headsatbits:
+                rsat[b] = self.sat[b]
+        return rsat
 
-    def grow_with_filter(self, lower_tail, filter):
+    def grow_with_filter(self, lower_tail, filters):
         for cv, cvn2 in lower_tail.cvn2s.items():
-            clu = Cluster(self.name, self.n2.clone())
-            if clu.add_sat(self.sat):
-                if type(clu.name) == tuple:
-                    clu.name = [clu.name, (lower_tail.nov, cv)]
-                else:
-                    clu.name.append((lower_tail.nov, cv))
-                clu.add_n2(cvn2, cv)
-                name = tuple(clu.name)
-                Cluster.groups.setdefault(self.nov, []).append((name, clu))
+            dic = {}
+            for filter in filters:
+                if cv in filter[0]:
+                    kn, sat = filter[1:]
+                    dic.setdefault('kns',[]).append(kn)
+                    dic.setdefault('sats',[]).append(sat)
+            clu = self.clone()
+            if type(clu.name) == tuple:
+                clu.name = [clu.name, (lower_tail.nov, cv)]
+            else:
+                clu.name.append((lower_tail.nov, cv))
+            for s in dic['sats']:
+                if not clu.add_sat(s):
+                    return
+            for kn in dic['kns']:
+                clu.remove_clause(kn)
+            new_tail_sat = clu.add_n2(cvn2, cv)
+            name = tuple(clu.name)
+            Cluster.groups.setdefault(self.nov, []).append((name, clu))
         x = 0
 
     def grow(self, lower_tail):

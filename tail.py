@@ -27,7 +27,7 @@ def merge_vkpair(vk2a, vk2b): # vk2a and vk2b must have common-cvs
     return t
 
 class Tail:
-    def __init__(self, bgrid, vk2dic, bitdic, n2sat_dic=None, block_bv_dic=None):
+    def __init__(self, bgrid, vk2dic, bitdic, block_bv_dic=None):
         self.bgrid = bgrid
         self.nov = bgrid.nov
         self.vk2dic = vk2dic
@@ -53,7 +53,7 @@ class Tail:
         self.eval_combos()
         Center.tails[self.nov] = self
         # generate: self.node2s and self.cvn2s
-        self.generate_n2s(n2sat_dic)
+        self.generate_n2s()
 
     def sort_vks(self, vk2dic):  # fill self.cvks_dic
         self.cvks_dic = {v: set([]) for v in self.bgrid.chvset }
@@ -73,7 +73,7 @@ class Tail:
                     del self.bdic[b]
         return vk
     
-    def generate_n2s(self, sat_dic):
+    def generate_n2s(self):
         self.node2s = {}  # {<key>: cvnode2, ...} key: md5 from kns of a cv
         self.cvn2s  = {}  # {<cv>: cvnode2(ref),.. }
         for chv in self.bgrid.chvset:
@@ -91,13 +91,6 @@ class Tail:
                 else:
                     for kname in self.cvks_dic[chv]:
                         n2.add_k2(self.vk2dic[kname])
-            for tp_cvs in sat_dic:
-                if chv in tp_cvs:
-                    if not n2.add_sat(sat_dic[tp_cvs].copy()):
-                        n2.done = 'conflict'
-                        # do not register n2, since it is conflicty
-                        del self.node2s[key]
-                        return
             self.cvn2s[chv] = n2
         x = 0
 

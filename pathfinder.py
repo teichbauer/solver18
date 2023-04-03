@@ -20,8 +20,12 @@ class PathFinder:
             highlayer, lowlayer = Center.tails[hnv], Center.tails[hnv-3]
             for cv, cvn2 in highlayer.cvn2s.items():
                 cluster = Cluster((hnv, cv), cvn2)
-                Cluster.clusters[hnv] = cluster
-                cluster.grow_with_filter(lowlayer, highlayer.cvsats[cv])
+                if cluster.add_sat(highlayer.cvsats[cv]['*'][0]):
+                    Cluster.clusters[hnv] = cluster
+                    filters = []
+                    if lowlayer.nov in highlayer.cvsats[cv]:
+                        filters = highlayer.cvsats[cv][lowlayer.nov]
+                    cluster.grow_with_filter(lowlayer, filters)
             hnv -= 6
         x = 9
 

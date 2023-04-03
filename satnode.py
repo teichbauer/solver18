@@ -33,7 +33,6 @@ class SatNode:
         vk2dic = {}
 
         block_bv_dic = {}
-        n2sat_dic = {}  # {(cvs):<sat>,..}
         print(f"------- {self.nov} -----------")
         # show_vkdic = {}
         for kn in self.touched:
@@ -43,7 +42,6 @@ class SatNode:
             if vk12.nob == 1:
                 b, v = vk12.hbit_value()
                 cvs = tuple(vk12.cvs)
-                n2sat_dic[cvs] = {b:int(not v)}
                 print(f"{kn}-{vk12.dic}{cvs}  becomes sat: {b}:{v}{cvs}")
                 block_bv_dic.setdefault(b,{})[v] = vk12.cvs
                 block_bv_dic[b]['kn'] = kn
@@ -52,7 +50,7 @@ class SatNode:
                     bdic.setdefault(b, set([])).add(kn)
                 vk2dic[kn] = vk12
         # display_vkdic(show_vkdic)
-        self.tail = Tail(self.bgrid, vk2dic, bdic, n2sat_dic, block_bv_dic)
+        self.tail = Tail(self.bgrid, vk2dic, bdic, block_bv_dic)
                 
         self.find_overlapped_vks()
         x = 0
