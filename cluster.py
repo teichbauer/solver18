@@ -53,6 +53,19 @@ class Cluster(PathNode):
         self.headsatbits = self.tail1.bgrid.bitset.union(self.tail2.bgrid.bitset)
         return self
 
+    def grow_with_filter(self, lower_tail, filter):
+        for cv, cvn2 in lower_tail.cvn2s.items():
+            clu = Cluster(self.name, self.n2.clone())
+            if clu.add_sat(self.sat):
+                if type(clu.name) == tuple:
+                    clu.name = [clu.name, (lower_tail.nov, cv)]
+                else:
+                    clu.name.append((lower_tail.nov, cv))
+                clu.add_n2(cvn2, cv)
+                name = tuple(clu.name)
+                Cluster.groups.setdefault(self.nov, []).append((name, clu))
+        x = 0
+
     def grow(self, lower_tail):
         for cv, cvn2 in lower_tail.cvn2s.items():
             clu = Cluster(self.name, self.n2.clone())

@@ -21,7 +21,7 @@ class PathFinder:
             for cv, cvn2 in highlayer.cvn2s.items():
                 cluster = Cluster((hnv, cv), cvn2)
                 Cluster.clusters[hnv] = cluster
-                cluster.grow(lowlayer)
+                cluster.grow_with_filter(lowlayer, highlayer.cvsats[cv])
             hnv -= 6
         x = 9
 

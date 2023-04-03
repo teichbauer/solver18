@@ -1,3 +1,6 @@
+## 2023-04-02->0.405
+- cluster.grow_with_filter
+- PathFinder.grow_pairs using cluster.grow_with_filter
 ## 2023-04-01->0.404
 - get rid of branch, Center.tails = {} replace Center.root_branch
 - clean up tail a bit
