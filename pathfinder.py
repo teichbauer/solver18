@@ -5,11 +5,13 @@ from basics import sortdic, print_bitdic, print_clause_dic, test_clauses
 class PathFinder:
     def __init__(self):
         self.cluster_groups = Cluster.groups
-        for nv in sorted(Center.tails):
-            Center.tails[nv].bchecker.make_cvsats()
+        for nv in sorted(Center.layers):
+            layer = Center.layers[nv]
+            layer.bchecker.make_cvsats()
+            msg = layer.bchecker.show_cvsats(layer.cvsats)
         self.grow_pairs(60)
         
-        self.grow_cluster(60)
+        # self.grow_cluster(60)
         hit_cnt = self.downwards()
         self.find_path()
 
@@ -17,7 +19,7 @@ class PathFinder:
         while hnv >= Center.minnov:
             if hnv == Center.minnov:
                 break
-            highlayer, lowlayer = Center.tails[hnv], Center.tails[hnv-3]
+            highlayer, lowlayer = Center.layers[hnv], Center.layers[hnv-3]
             for cv, cvn2 in highlayer.cvn2s.items():
                 cluster = Cluster((hnv, cv), cvn2)
                 if cluster.add_sat(highlayer.cvsats[cv]['*'][0]):
@@ -29,16 +31,16 @@ class PathFinder:
             hnv -= 6
         x = 9
 
-    def grow_cluster(self, tail_nv):
-        while tail_nv > Center.minnov:
-            tail = Center.tails[tail_nv]
-            ntail = Center.tails[tail_nv - 3]
-            for cv, cvn2 in tail.cvn2s.items():
-                cluster = Cluster((tail.nov,cv), cvn2)
-                Cluster.clusters[tail_nv] = cluster
-                # grow cluster between (tail, ntail)
-                cluster.grow(ntail)
-            tail_nv -= 6
+    def grow_cluster(self, layer_nv):
+        while layer_nv > Center.minnov:
+            layer = Center.layers[layer_nv]
+            nlayer = Center.layers[layer_nv - 3]
+            for cv, cvn2 in layer.cvn2s.items():
+                cluster = Cluster((layer.nov,cv), cvn2)
+                Cluster.clusters[layer_nv] = cluster
+                # grow cluster between (layer, nlayer)
+                cluster.grow(nlayer)
+            layer_nv -= 6
         x = 8
 
     def downwards(self):
@@ -76,28 +78,28 @@ class PathFinder:
         return cnt
 
     def find_path(self):
-        lnv, lind = 60, 0
-        nlnv = lnv - 6
+        lnv, lind = 60, 0   # layer-nov, index
+        nextlnv = lnv - 6      # next-layer-nov
         cluster = self.cluster_groups[lnv][lind][1]
         path = [ cluster ]
-        if not self.pathdown(path, cluster, self.cluster_groups[nlnv]):
+        if not self.pathdown(path, cluster, self.cluster_groups[nextlnv]):
             lind += 1
         else:
             x = 9
 
     def pathdown(self, path, clustr, ngrp):
-        # set pblock for the next 2 lower tails
+        # set pblock for the next 2 lower layers
         nv = clustr.nov - 6
-        tails = []
+        layers = []
         while nv >= Center.minnov and nv >= clustr.nov - 9:
-            tails.append(Center.snodes[nv].tail)
+            layers.append(Center.snodes[nv].layer)
             nv -= 3
-        clustr.set_pblock(tails)
+        clustr.set_pblock(layers)
         grp = clustr.block_filter(ngrp)
 
         nv = clustr.nov - 6
         while nv >= Center.minnov:
-            res = test_clauses(Center.tails[nv].vk2dic, clustr.sat)
+            res = test_clauses(Center.layers[nv].vk2dic, clustr.sat)
             nv -= 3
 
         ind = 0

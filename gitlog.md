@@ -1,3 +1,5 @@
+## 2023-04-10->0.407
+- tail -> layer
 ## 2023-04-03->0.406
 - tail: no more n2sat_dic .generate_n2s()
 - no n2sat_dic in satnode for making tail

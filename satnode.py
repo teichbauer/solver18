@@ -1,7 +1,7 @@
 from pathfinder import PathFinder
 from bitgrid import BitGrid
 from center import Center
-from tail import Tail
+from layer import Layer
 from basics import display_vkdic, ordered_dic_string, verify_sat
 
 class SatNode:
@@ -50,7 +50,7 @@ class SatNode:
                     bdic.setdefault(b, set([])).add(kn)
                 vk2dic[kn] = vk12
         # display_vkdic(show_vkdic)
-        self.tail = Tail(self.bgrid, vk2dic, bdic, block_bv_dic)
+        self.layer = layer(self.bgrid, vk2dic, bdic, block_bv_dic)
                 
         self.find_overlapped_vks()
         x = 0
@@ -60,7 +60,7 @@ class SatNode:
         if self.nov == Center.maxnov: return
         nv = self.nov + 3
         while nv <= 60:
-            t = Center.snodes[nv].tail
+            t = Center.snodes[nv].layer
             obits = self.bgrid.bitset.intersection(t.bdic)
             obits_cnt = len(obits)
             if obits_cnt > 0:
@@ -79,7 +79,7 @@ class SatNode:
                                 vk.kname,
                                 (cvs, vk.cvs,  None)
                             )
-                        else:   # len(cvs) == 1
+                        else:   # len(d) == 1
                             vk1 = vk.clone(list(d))
                             blck = tuple(vk1.dic.items())[0]
                             t.blbmgr.add_cbd(
@@ -92,8 +92,8 @@ class SatNode:
 
     def heads_schwanz(self):
         head = set([])
-        schwanz = set(self.tail.vk2dic)
-        for vd in self.tail.blbmgr.cbdic.values():
+        schwanz = set(self.layer.vk2dic)
+        for vd in self.layer.blbmgr.cbdic.values():
             for kn in vd:
                 head.add(kn)
                 if kn in schwanz:
@@ -114,10 +114,11 @@ class SatNode:
                 hd, swz = Center.snodes[nv].heads_schwanz()
                 print(f"{nv}-heads: {hd}")
                 print(f"{nv}-schwz: {swz}")
-                tail = Center.snodes[nv].tail
-                tail.bchecker.build_checkdic()
-                Center.add_blocks(nv, tail.bchecker)
+                layer = Center.snodes[nv].layer
+                layer.bchecker.build_checkdic()
+                Center.add_blocks(nv, layer.bchecker)
                 nv -= 3
+
             pfinder = PathFinder()
             pfinder.find_solutions()
             x = 1

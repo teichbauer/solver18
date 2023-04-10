@@ -1,11 +1,11 @@
 from center import Center
 
 class BlockChecker:
-    def __init__(self, tail):
-        self.tail = tail
+    def __init__(self, Layer):
+        self.Layer = Layer
         self.checkdic = {}
         self.block_dic = {}
-        self.block_refs = []  # ele: ((lower-tail-cvs), <kn>, <sat-dic>)
+        self.block_refs = []  # ele: ((lower-Layer-cvs), <kn>, <sat-dic>)
 
     def make_cvsats(self):
         for vbit, d in self.checkdic.items():
@@ -17,20 +17,34 @@ class BlockChecker:
                         entry = (e2[1], ke[1], {vbit: int(not bv)})
                         self.block_refs.append(entry)
                         for cv in e1[1]:
-                            cvd = self.tail.cvsats.setdefault(cv,{})
+                            cvd = self.Layer.cvsats.setdefault(cv,{})
                             nvlst = cvd.setdefault(e2[0],[])
                             nvlst.append(entry)
                 x = 0
             x = 8
         x = 9
 
+    def show_cvsats(self, cvsats):
+        msg = f"Layer-{self.Layer.nov}:\n"
+        for cv in sorted(cvsats):
+            novdic = cvsats[cv]
+            msg += f"  {cv}: " + "{\n"
+            for nv, lst in novdic.items():
+                msg += f"    {nv}: [\n"
+                msg += "          "
+                for e in lst:
+                    msg += f"{e},\t"
+                msg += "\n        ],\n"
+            msg += "      }\n"
+        return msg
+
     def build_checkdic(self):
-        for lower_nov, entry in self.tail.blbmgr.cbdic.items():
+        for lower_nov, entry in self.Layer.blbmgr.cbdic.items():
             for kn, tp in entry.items():
                 if tp[2] == None:
                     star_lst = self.block_dic.setdefault('*',[])
                     dic = {
-                        self.tail.nov: tuple(tp[1]), 
+                        self.Layer.nov: tuple(tp[1]), 
                         lower_nov: tuple(tp[0])
                     }
                     star_lst.append(dic)
@@ -42,14 +56,14 @@ class BlockChecker:
                         for rd in rds:
                             d = rd.copy()
                             d.pop('kn')
-                            tail_cvs = d.pop(self.tail.nov)
-                            cmm_cvs = tail_cvs.intersection(tp[1])
+                            Layer_cvs = d.pop(self.Layer.nov)
+                            cmm_cvs = Layer_cvs.intersection(tp[1])
 
                             # add to checkdic
                             checks = self.checkdic[bb].setdefault(vv, [])
                             dic = {
                                 'kn': kn,
-                                self.tail.nov:tp[1],
+                                self.Layer.nov:tp[1],
                                 lower_nov:tp[0]}
                             if not dic in checks:
                                 checks.append(dic)
@@ -61,7 +75,7 @@ class BlockChecker:
                                     add_it = True
                                     cvs = the_cvs.intersection(tp[0])
                                     dd = {
-                                        self.tail.nov: tuple(cmm_cvs), 
+                                        self.Layer.nov: tuple(cmm_cvs), 
                                         nv: tuple(cvs)
                                     }
                                     for dx in self.block_dic['*']:
@@ -73,7 +87,7 @@ class BlockChecker:
                                 else:
                                     lst = self.block_dic.setdefault(bb, [])
                                     st = set([])
-                                    st.add((self.tail.nov,tuple(cmm_cvs)))
+                                    st.add((self.Layer.nov,tuple(cmm_cvs)))
                                     st.add((nv, tuple(the_cvs)))
                                     st.add((lower_nov, tuple(tp[0])))
                                     if st not in lst:
@@ -84,9 +98,10 @@ class BlockChecker:
                         dics = cdic.setdefault(vv, [])
                         dics.append({
                             'kn': kn, 
-                            self.tail.nov: tp[1], 
+                            self.Layer.nov: tp[1], 
                             lower_nov: tp[0]})
                         x = 1
+    # def build_checkdic(self):
 
 
     

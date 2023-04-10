@@ -26,7 +26,7 @@ def merge_vkpair(vk2a, vk2b): # vk2a and vk2b must have common-cvs
     t = s.pop()
     return t
 
-class Tail:
+class Layer:
     def __init__(self, bgrid, vk2dic, bitdic, block_bv_dic=None):
         self.bgrid = bgrid
         self.nov = bgrid.nov
@@ -47,11 +47,14 @@ class Tail:
                             dic.setdefault('*',[]).append({b: int(not v)})
                 x = 0
             self.blbmgr = BlbManager(self, block_bv_dic) 
+        # find pairs of vk2s (vka, vkb) bitting on the same 2 bits, and
+        # vka.cvs vkb.cvs do have intersection -> tuple_lst  list of tuples:
+        #  (vka, vkb, sat_tpl, xcvs)
         tuple_lst = self.proc_pairs()
         if tuple_lst:
             self.pair2blocker(tuple_lst)
         self.eval_combos()
-        Center.tails[self.nov] = self
+        Center.Layers[self.nov] = self
         # generate: self.node2s and self.cvn2s
         self.generate_n2s()
 
@@ -95,7 +98,7 @@ class Tail:
         x = 0
 
     def proc_pairs(self):
-        # find pairs of vk2s (vka, vka) bitting on the same 2 bits, and
+        # find pairs of vk2s (vka, vkb) bitting on the same 2 bits, and
         # vka.cvs vkb.cvs do have intersection
         pairs = []
         combo_pairs = []

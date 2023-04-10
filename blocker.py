@@ -14,20 +14,20 @@ class Blocker:
         c.block_set = self.block_set.copy()
         return c
     
-    def set_pblock(self, bits, tail):
+    def set_pblock(self, bits, layer):
         for bit in bits:
-            self.collect_pblocks(bit, tail)
+            self.collect_pblocks(bit, layer)
 
-    def collect_pblocks(self, bit, tail):
-        dic = self.pblock_dic.setdefault(tail.nov, {})
+    def collect_pblocks(self, bit, layer):
+        dic = self.pblock_dic.setdefault(layer.nov, {})
         kns = self.parent.bitdic[bit]
         for kn in kns:
             vk = self.parent.clauses[kn]
-            cvs, ncvs = tail.bgrid.bv2cvs(bit, vk.dic[bit])
-            # vk.dic[bit] != tailcv.sat[bit]
+            cvs, ncvs = layer.bgrid.bv2cvs(bit, vk.dic[bit])
+            # vk.dic[bit] != layercv.sat[bit]
             for cv in ncvs:
                 dic.setdefault(cv,{})[kn] = '-'
-            # vk.dic[bit] == tailcv.sat[bit]
+            # vk.dic[bit] == layercv.sat[bit]
             obit = vk.other_bit(bit)
             okns = self.parent.bitdic[obit].copy()
             if len(okns) == 0:
@@ -47,7 +47,7 @@ class Blocker:
             for cv in xlst:
                 if cv not in lst:
                     lst.append(cv)
-            if len(lst) == len(Center.snodes[nv].tail.bgrid.chvset):
+            if len(lst) == len(Center.snodes[nv].layer.bgrid.chvset):
                 return False
             for e in block.block_set:
                 self.block_set.add(e)
@@ -61,7 +61,7 @@ class Blocker:
                 if cv not in lst:
                     lst.append(cv)
                     self.block_set.add((nov,cv))
-            L = len(Center.snodes[nov].tail.bgrid.chvset)
+            L = len(Center.snodes[nov].layer.bgrid.chvset)
             if len(self.block_dic[nov]) == L:
                 return False
         elif type(arg) == tuple:

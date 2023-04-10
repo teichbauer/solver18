@@ -12,9 +12,9 @@ class Center:
     blocker_dic = {}  # {<bit>:{}}
     cblocker_dic = {}  # {<bit>:{}}
     sumbdic = {}
-    vk2bdic = {}  # <bit>:[<tail1>,<tail2>,...], <bit>:[],..}
+    vk2bdic = {}  # <bit>:[<layer1>,<layer2>,...], <bit>:[],..}
     orig_vkm = None
-    tails = {}
+    layers = {}
 
     # 8 sats:
     @classmethod
@@ -63,13 +63,6 @@ class Center:
         nov = cls.maxnov
         x = 1
         # sn = cls.snodes[nov]
-
-    @classmethod
-    def get_tailchain(cls):
-        chain = {}
-        for nov, sn in cls.snodes.items():
-            chain[nov] = sn.tail
-        return chain
 
     @classmethod
     def bit_overlaps(cls, nov):

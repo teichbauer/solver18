@@ -12,11 +12,11 @@ class Cluster(PathNode):
         if type(n2node) == Cluster:  # n2node is a cluster clone it
             self.n2 = n2node.n2
             self.nov = n2node.nov
-            self.tail1 = n2node.tail1
-            if 'tail2' in n2node.__dict__:
-                self.tail2 = n2node.tail2
+            self.Layer1 = n2node.Layer1
+            if 'Layer2' in n2node.__dict__:
+                self.Layer2 = n2node.Layer2
             else:
-                self.tail2 = None
+                self.Layer2 = None
             self.sat = {b: v for b, v in n2node.sat.items()}
             self.bitdic = {b:s.copy() for b, s in n2node.bitdic.items() }
             self.clauses = n2node.clauses.copy()
@@ -26,15 +26,15 @@ class Cluster(PathNode):
             return # cloning done
         # type(n2node) == CVNode2
         self.n2 = n2node
-        self.tail1 = n2node.tail
-        self.headsatbits = n2node.tail.bgrid.bitset.copy()
-        self.nov = n2node.tail.nov
+        self.Layer1 = n2node.Layer
+        self.headsatbits = n2node.Layer.bgrid.bitset.copy()
+        self.nov = n2node.Layer.nov
         bdic = {b:s.copy() for b, s in n2node.bitdic.items()}
         super().__init__(n2node.sat.copy(), bdic, n2node.clauses.copy())
         self.add_sat(n2node.sat_dic(name[1]))
         self.block = Blocker(self)
 
-    def clone(self):  # only for grown cluster (with 2 tails: tail1, tail2)
+    def clone(self):  # only for grown cluster (with 2 Layers: Layer1, Layer2)
         clu = Cluster(tuple(self.name), self)
         return clu
     
@@ -47,22 +47,22 @@ class Cluster(PathNode):
                     del self.bitdic[bit]
         
     def add_n2(self, n2, n2cv):
-        self.tail2 = n2.tail
+        self.Layer2 = n2.Layer
         sat = n2.sat_dic(n2cv)
         if not self.add_sat(sat):
             return None
         for cl in n2.clauses.values():
             if not self.add_k2(cl):
                 return None
-        self.headsatbits = self.headsatbits.union(self.tail2.bgrid.bitset)
+        self.headsatbits = self.headsatbits.union(self.Layer2.bgrid.bitset)
         rsat = {}
         for b,sv in self.sat.items():
             if b not in self.headsatbits:
                 rsat[b] = self.sat[b]
         return rsat
 
-    def grow_with_filter(self, lower_tail, filters):
-        for cv, cvn2 in lower_tail.cvn2s.items():
+    def grow_with_filter(self, lower_Layer, filters):
+        for cv, cvn2 in lower_Layer.cvn2s.items():
             dic = {}
             for filter in filters:
                 if cv in filter[0]:
@@ -71,27 +71,27 @@ class Cluster(PathNode):
                     dic.setdefault('sats',[]).append(sat)
             clu = self.clone()
             if type(clu.name) == tuple:
-                clu.name = [clu.name, (lower_tail.nov, cv)]
+                clu.name = [clu.name, (lower_Layer.nov, cv)]
             else:
-                clu.name.append((lower_tail.nov, cv))
+                clu.name.append((lower_Layer.nov, cv))
             for s in dic['sats']:
                 if not clu.add_sat(s):
                     return
             for kn in dic['kns']:
                 clu.remove_clause(kn)
-            new_tail_sat = clu.add_n2(cvn2, cv)
+            new_Layer_sat = clu.add_n2(cvn2, cv)
             name = tuple(clu.name)
             Cluster.groups.setdefault(self.nov, []).append((name, clu))
         x = 0
 
-    def grow(self, lower_tail):
-        for cv, cvn2 in lower_tail.cvn2s.items():
+    def grow(self, lower_Layer):
+        for cv, cvn2 in lower_Layer.cvn2s.items():
             clu = Cluster(self.name, self.n2.clone())
             if clu.add_sat(self.sat):
                 if type(clu.name) == tuple:
-                    clu.name = [clu.name, (lower_tail.nov, cv)]
+                    clu.name = [clu.name, (lower_Layer.nov, cv)]
                 else:
-                    clu.name.append((lower_tail.nov, cv))
+                    clu.name.append((lower_Layer.nov, cv))
                 clu.add_n2(cvn2, cv)
                 name = tuple(clu.name)
                 Cluster.groups.setdefault(self.nov, []).append((name, clu))
@@ -107,13 +107,13 @@ class Cluster(PathNode):
             assert(b in self.sat), "tsat not qualified"
             if self.sat[b] != v:
                 if b in self.headsatbits:
-                    if b in self.tail1.bgrid.bits:
-                        bgrid = self.tail1.bgrid
-                        tail_nov = self.tail1.nov
+                    if b in self.Layer1.bgrid.bits:
+                        bgrid = self.Layer1.bgrid
+                        Layer_nov = self.Layer1.nov
                     else:
-                        bgrid = self.tail2.bgrid
-                        tail_nov = self.tail2.nov
-                    return True, (tail_nov, bgrid.bv2cvs(b, self.sat[b])[0])
+                        bgrid = self.Layer2.bgrid
+                        Layer_nov = self.Layer2.nov
+                    return True, (Layer_nov, bgrid.bv2cvs(b, self.sat[b])[0])
                 return True, None
         return False, None
 
@@ -134,12 +134,13 @@ class Cluster(PathNode):
                     return None
             lower_nov = cl.nov - 6
             new_bits = set(c.sat) - set(old_sat)
-            # in case there are new-sat(bits), see if lower tails' head on them
+            # in case there are new-sat(bits), 
+            # see if lower Layers' head on them
             if len(new_bits) > 0:
                 lnov = lower_nov
                 while lnov >= Center.minnov:
-                    bgrd = Center.snodes[lnov].tail.bgrid
-                    bs = new_bits.intersection(bgrd.bitset) # tail bit overlaps
+                    bgrd = Center.snodes[lnov].Layer.bgrid
+                    bs = new_bits.intersection(bgrd.bitset) # Layer bit overlaps
                     for b in bs:
                         v = c.sat[b]
                         c.block.add_block((lnov, bgrd.bv2cvs(b, v)[1]))
@@ -154,13 +155,13 @@ class Cluster(PathNode):
                 newgrp.append(g[1])
         return newgrp
 
-    def set_pblock(self, tails):
+    def set_pblock(self, Layers):
         bits = set(self.bitdic)
-        for tail in tails:
-            headbits = tail.bgrid.bitset.intersection(self.bitdic)
-            print(f"{self.name}->{tail.nov}: head-bits: {headbits}")
+        for Layer in Layers:
+            headbits = Layer.bgrid.bitset.intersection(self.bitdic)
+            print(f"{self.name}->{Layer.nov}: head-bits: {headbits}")
             if len(headbits) > 0:
-                self.block.set_pblock(headbits, tail)
+                self.block.set_pblock(headbits, Layer)
 
     def pblock_filter(self, pbdic, lower_clustr):
         ss = set(lower_clustr.name)

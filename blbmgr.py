@@ -7,7 +7,7 @@ class BlbManager:
         # cbdic (conditional block-dic):
         # {<nov>:{
         #   <kn>: (  - vk.kname that has 1 bit in <nov>-bgrid-bits
-        #   (cvs),   - cvs of the tail[nov] this kn has 1 bit
+        #   (cvs),   - cvs of the layer[nov] this kn has 1 bit
         #   (local-cvs)  - cvs in cvks_dic the kn to be removed
         #   (b,v) )  - bit and val which triggers block
         #              if None in place of (b,v): every local-cv are blocked
@@ -40,47 +40,6 @@ class BlbManager:
                 self.owner.bchecker.block_dic.setdefault('*',[]).append(oppo)
         d = self.cbdic.setdefault(nv, {})
         d[kn] = tpl
-        x = 0
-
-    def add_split_sat(self, splt_sat_tpl):
-        sat_bit, sat_val = splt_sat_tpl
-        if sat_bit in self.block_bv_dic:
-            self.block_sat(sat_bit, sat_val)
-        kns = self.owner.bdic.get(sat_bit, []).copy()
-
-        # since split_sat covers every cvs: all vks be removed
-        vks = [self.owner.remove_vk2(kn) for kn in kns]
-        blck_bv_dic = {}
-        for vk in vks:
-            self.owner.remove_kn2_from_cvk_dic(vk.cvs, vk.kname)
-            if vk.dic[sat_bit] == sat_val:
-                vk1 = vk.clone([sat_bit])
-                b, v = vk1.hbit_value()
-                d = blck_bv_dic.setdefault(b, {})
-                d[v] = vk.cvs
-
-        if len(blck_bv_dic) > 0:
-            self.add_block_bv_dic(blck_bv_dic)
-        x = 0
-
-    def block_sat(self, sbit, sval):
-        print(f"block_sat on {self.owner.nov}/{(sbit, sval)}")
-        # get the 1 or 2 vals under sbit in self.block_bv_dic
-        bmap = self.block_bv_dic[sbit] 
-        vals = list(bmap)  
-        # vals has max 2 vals: 0,1. Mostly just one: 0 or 1
-        while len(vals) > 0:
-            bv = vals.pop()
-            if bv == sval:
-                for cv in bmap[bv]:
-                    if cv in self.owner.cvks_dic:
-                        del self.owner.cvks_dic[cv]
-            # clearing up bv from self.block_bv_dic[sbit] 
-            if len(vals) == 0:
-                del self.block_bv_dic[sbit]
-            else:
-                del self.block_bv_dic[sbit][bv]
-            x = 0
         x = 0
 
     def add_block_bv_dic(self, block_bv_dic):
