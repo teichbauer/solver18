@@ -8,7 +8,7 @@ class PathFinder:
         for nv in sorted(Center.layers):
             layer = Center.layers[nv]
             layer.bchecker.make_cvsats()
-            msg = layer.bchecker.show_cvsats(layer.cvsats)
+            # msg = layer.bchecker.show_cvsats(layer.cvsats)
         self.grow_pairs(60)
         
         # self.grow_cluster(60)
@@ -22,12 +22,15 @@ class PathFinder:
             highlayer, lowlayer = Center.layers[hnv], Center.layers[hnv-3]
             for cv, cvn2 in highlayer.cvn2s.items():
                 cluster = Cluster((hnv, cv), cvn2)
-                if cluster.add_sat(highlayer.cvsats[cv]['*'][0]):
-                    Cluster.clusters[hnv] = cluster
-                    filters = []
-                    if lowlayer.nov in highlayer.cvsats[cv]:
-                        filters = highlayer.cvsats[cv][lowlayer.nov]
-                    cluster.grow_with_filter(lowlayer, filters)
+                d = highlayer.cvsats[cv].get('*', None)
+                if d and not cluster.add_sat(d[0]):
+                    continue
+                Cluster.clusters[hnv] = cluster
+                filters = []
+                if lowlayer.nov in highlayer.cvsats[cv]:
+                    filters = highlayer.cvsats[cv][lowlayer.nov]
+                cluster.grow_with_filter(lowlayer, filters)
+                
             hnv -= 6
         x = 9
 

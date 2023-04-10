@@ -50,7 +50,7 @@ class SatNode:
                     bdic.setdefault(b, set([])).add(kn)
                 vk2dic[kn] = vk12
         # display_vkdic(show_vkdic)
-        self.layer = layer(self.bgrid, vk2dic, bdic, block_bv_dic)
+        self.layer = Layer(self.bgrid, vk2dic, bdic, block_bv_dic)
                 
         self.find_overlapped_vks()
         x = 0

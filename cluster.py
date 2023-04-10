@@ -63,26 +63,31 @@ class Cluster(PathNode):
 
     def grow_with_filter(self, lower_Layer, filters):
         for cv, cvn2 in lower_Layer.cvn2s.items():
-            dic = {}
-            for filter in filters:
-                if cv in filter[0]:
-                    kn, sat = filter[1:]
-                    dic.setdefault('kns',[]).append(kn)
-                    dic.setdefault('sats',[]).append(sat)
             clu = self.clone()
             if type(clu.name) == tuple:
                 clu.name = [clu.name, (lower_Layer.nov, cv)]
             else:
                 clu.name.append((lower_Layer.nov, cv))
-            for s in dic['sats']:
+            excl_kns = []
+            sat2b_added = []
+            for filter in filters:  # filter: [set(lower-cvs), kn, <sat-dic>]
+                if cv in filter[0]:
+                    kn, sat = filter[1:]
+                    excl_kns.append(kn)
+                    sat2b_added.append(sat)
+            for kn in excl_kns:
+                clu.remove_clause(kn)
+            for s in sat2b_added:
                 if not clu.add_sat(s):
                     return
-            for kn in dic['kns']:
-                clu.remove_clause(kn)
             new_Layer_sat = clu.add_n2(cvn2, cv)
             name = tuple(clu.name)
-            Cluster.groups.setdefault(self.nov, []).append((name, clu))
+            if clu.grow_cvsats(new_Layer_sat):
+                Cluster.groups.setdefault(self.nov, []).append((name, clu))
         x = 0
+
+    def grow_cvsats(self, new_sat):
+        return True
 
     def grow(self, lower_Layer):
         for cv, cvn2 in lower_Layer.cvn2s.items():

@@ -54,7 +54,7 @@ class Layer:
         if tuple_lst:
             self.pair2blocker(tuple_lst)
         self.eval_combos()
-        Center.Layers[self.nov] = self
+        Center.layers[self.nov] = self
         # generate: self.node2s and self.cvn2s
         self.generate_n2s()
 
