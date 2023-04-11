@@ -3,7 +3,7 @@ from basics import expand_bitcombo
 class Clause:
     def __init__(self, name, dic, mark=None):
         self.kname = name
-        self.bits = sorted(dic)
+        self.bits = sorted(dic, reverse=True)
         self.dic = dic
         self.mark = mark
 

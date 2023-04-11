@@ -12,9 +12,20 @@ class Center:
     blocker_dic = {}  # {<bit>:{}}
     cblocker_dic = {}  # {<bit>:{}}
     sumbdic = {}
-    vk2bdic = {}  # <bit>:[<layer1>,<layer2>,...], <bit>:[],..}
+    vk2dic = {}  # collect all vk2s of alll novs
     orig_vkm = None
     layers = {}
+    vk2pairs = {}
+
+
+    @classmethod
+    def add_vk2(cls, vk2):
+        for vk in cls.vk2dic.values():
+            if vk2.bits == vk.bits:
+                cls.vk2pairs.setdefault(vk2.kname, []).append(vk.kname)
+                cls.vk2pairs.setdefault(vk.kname, []).append(vk2.kname)
+        cls.vk2dic[vk2.kname] = vk2
+        x = 9
 
     # 8 sats:
     @classmethod
@@ -57,12 +68,6 @@ class Center:
     def set_maxnov(cls, nov):
         cls.maxnov = nov
         cls.bits = set(range(nov))
-
-    @classmethod
-    def set_blinks(cls):
-        nov = cls.maxnov
-        x = 1
-        # sn = cls.snodes[nov]
 
     @classmethod
     def bit_overlaps(cls, nov):

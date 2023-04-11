@@ -1,3 +1,7 @@
+## 2023-04-11->0.409
+- center: vk2pairs, vk2dic, .add_vk2
+- clause.bits reverse sorted
+- cluster: progress
 ## 2023-04-10->0.408
 - complete 407 changes
 - cluster.grow_cvsats: setup cluster.cvsats

@@ -49,6 +49,7 @@ class SatNode:
                 for b, v in vk12.dic.items():
                     bdic.setdefault(b, set([])).add(kn)
                 vk2dic[kn] = vk12
+                Center.add_vk2(vk12)
         # display_vkdic(show_vkdic)
         self.layer = Layer(self.bgrid, vk2dic, bdic, block_bv_dic)
                 

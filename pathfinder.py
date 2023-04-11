@@ -25,7 +25,6 @@ class PathFinder:
                 d = highlayer.cvsats[cv].get('*', None)
                 if d and not cluster.add_sat(d[0]):
                     continue
-                Cluster.clusters[hnv] = cluster
                 filters = []
                 if lowlayer.nov in highlayer.cvsats[cv]:
                     filters = highlayer.cvsats[cv][lowlayer.nov]
