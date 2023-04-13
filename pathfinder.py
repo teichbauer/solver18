@@ -10,10 +10,11 @@ class PathFinder:
             layer.bchecker.make_cvsats()
             # msg = layer.bchecker.show_cvsats(layer.cvsats)
         self.grow_pairs(60)
-        
+        cluster = Cluster.groups[60][0][1]
+        self.search(cluster, 54)        
         # self.grow_cluster(60)
-        hit_cnt = self.downwards()
-        self.find_path()
+        # hit_cnt = self.downwards()
+        # self.find_path()
 
     def grow_pairs(self, hnv):  # paring layers: high-nov to lower-nov
         while hnv >= Center.minnov:
@@ -29,9 +30,30 @@ class PathFinder:
                 if lowlayer.nov in highlayer.cvsats[cv]:
                     filters = highlayer.cvsats[cv][lowlayer.nov]
                 cluster.grow_with_filter(lowlayer, filters)
-                
+                x = 0
+            break   # just build 60-57 pairs: 7x7=49
             hnv -= 6
         x = 9
+
+    def search(self, cluster, nv):
+        while nv >= Center.minnov:
+            lyr = Center.layers[nv]
+            cvdic = cluster.cvsats[nv]
+            for cv in cvdic['cvs']:
+                filters = cvdic.get(cv, [])
+                clu = cluster.grow_layercv(lyr, cv, filters)
+                if clu:
+                    Cluster.groups[nv].append(clu)
+                    return self.search(clu, nv - 3)
+                else:
+                    pass
+
+
+
+        
+
+    def search_down(self, cluster):
+        cluster.search_next()
 
     def grow_cluster(self, layer_nv):
         while layer_nv > Center.minnov:

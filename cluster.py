@@ -82,43 +82,44 @@ class Cluster(PathNode):
                     return
             new_Layer_sat = clu.add_n2(cvn2, cv)
             name = tuple(clu.name)
-            if clu.grow_cvsats(new_Layer_sat):
-                Cluster.groups.setdefault(self.nov, []).append((name, clu))
+            clu.cvsats = {}
+            if self.nov - 6 > Center.minnov:
+                clu.build_cvsats(Center.layers[self.nov - 6])
+            Cluster.groups.setdefault(self.nov, []).append((name, clu))
         x = 0
 
-    def grow_cvsats(self, new_sat):
-        self.cvsats = {}
-        nv = self.nov - 6
-        while nv >= Center.minnov:
-            lyr = Center.layers[nv]
-            dic = self.find_touch(lyr)
-            break
-            # nv -= 3
-        return True
-
-    def find_touch(self, lyr):
-        rtbits = lyr.bgrid.bitset
-        # get allowed cvs of lyr: 
-        # 1. if self.sat touches lyr's head-bitset: filter cvs
+    def build_cvsats(self, lyr):
+        lheadbits = lyr.bgrid.bitset
+        # 1. if self.sat touches lyr's head-bitset: cvs will be restricted
         # 2. if no touch, use all of the cvs of lyr
-        cvs = lyr.bgrid.chvset
-        head_sat_bits = rtbits.intersection(self.sat)
+        cvs = lyr.bgrid.chvset  # all cvs of lyr
+        head_sat_bits = lheadbits.intersection(self.sat)
         if len(head_sat_bits) > 0:
             for cvtb in head_sat_bits:
                 allowed = lyr.bgrid.bv2cvs(cvtb, self.sat[cvtb])[0]
                 cvs = cvs.intersection(allowed)
         dic = self.cvsats.setdefault(lyr.nov, {})
         dic['cvs'] = tuple(cvs)
-        # 
-        # lyr-head-bit touch self.tail(vk2-bits)?
-        head_tail_bits = rtbits.intersection(self.bitdic)
+        # lyr-head-bit touch cluster(self).tail(vk2-bits)?
+        head_tail_bits = lheadbits.intersection(self.bitdic)
         if len(head_tail_bits) > 0:
-            hdic = {}  # in self.vks, some omits/sat ->hdic[kn] = <sat> | None
             for b in head_tail_bits:
                 for kn in self.bitdic[b]:
                     cl = self.clauses[kn]
+                    obit = cl.other_bit(b)
+                    sat = {obit: int(not cl.dic[obit])}
                     cvs, ncvs = lyr.bgrid.bv2cvs(b, cl.dic[b])
-
+                    for cv in dic['cvs']:
+                        # when 3 vals in an ele in lst: cut-off from cluster
+                        lst = dic.setdefault(cv,[])
+                        if cv in cvs:
+                            t = ('cluster', cl.kname, sat.copy())
+                            if t not in lst:
+                                lst.append(t) # add sat
+                        elif cv in ncvs:
+                            t = ('cluster', cl.kname, None)
+                            if t not in lst:
+                                lst.append(t) # no sat
         # find double (both bits)touch vk-pairs btwn lyr.vk2 and self.vk2s
         touch_bits = set(lyr.bdic).intersection(self.bitdic)
         for tb in touch_bits:
@@ -128,13 +129,47 @@ class Cluster(PathNode):
                         if xkn in lyr.vk2dic:
                             vk = lyr.vk2dic[xkn]
                             res = self.clauses[kn].evaluate_overlap(vk)
-                            if type(res) == dict:
-                                dic[vk.kname] = (tuple(vk.cvs), res)
-                            elif res == 0:
-                                dic[vk.kname] = None
-                            else:
-                                pass
-        return {}
+                            for cv in vk.cvs:
+                                if cv in dic['cvs']:
+                                    # when 2 vals in an ele in lst: 
+                                    # cut-off from lyr
+                                    lst = dic.setdefault(cv,[])
+                                    if type(res) == dict:
+                                        t = (vk.kname, res)  # add sat
+                                    elif res == 0:
+                                        t = (vk.kname, None) # no sat
+                                    if t not in lst:
+                                        lst.append(t) 
+        x = 0
+
+    def grow_layercv(self, lyr, cv, filters):
+        cvn2 = lyr.cvn2s[cv]
+        clu = self.clone()
+        clu.name = self.name[:]
+        clu.name.append((lyr.nov, cv))
+        lyr_filter = {}
+        for ftr in filters:
+            if ftr[0] == 'cluster':
+                clu.clauses.pop(ftr[1])
+                if ftr[2]:
+                    if not clu.add_sat(ftr[2]):
+                        return False
+            else:
+                lyr_filter[ftr[0]] = ftr[1]
+        for kn, cl in cvn2.clauses.items():
+            if kn in lyr_filter:
+                st = lyr_filter[kn]
+                if st:
+                    if not clu.add_sat(st):
+                        return False
+                continue
+            if not clu.add_k2(cl):
+                return False
+        return clu
+        
+
+
+
 
     def grow(self, lower_Layer):
         for cv, cvn2 in lower_Layer.cvn2s.items():
