@@ -12,11 +12,11 @@ class Cluster(PathNode):
         if type(n2node) == Cluster:  # n2node is a cluster clone it
             self.n2 = n2node.n2
             self.nov = n2node.nov
-            self.Layer1 = n2node.Layer1
-            if 'Layer2' in n2node.__dict__:
-                self.Layer2 = n2node.Layer2
+            self.layer1 = n2node.layer1
+            if 'layer2' in n2node.__dict__:
+                self.layer2 = n2node.layer2
             else:
-                self.Layer2 = None
+                self.layer2 = None
             self.sat = {b: v for b, v in n2node.sat.items()}
             self.bitdic = {b:s.copy() for b, s in n2node.bitdic.items() }
             self.clauses = n2node.clauses.copy()
@@ -26,15 +26,15 @@ class Cluster(PathNode):
             return # cloning done
         # type(n2node) == CVNode2
         self.n2 = n2node
-        self.Layer1 = n2node.Layer
-        self.headsatbits = n2node.Layer.bgrid.bitset.copy()
-        self.nov = n2node.Layer.nov
+        self.layer1 = n2node.layer
+        self.headsatbits = n2node.layer.bgrid.bitset.copy()
+        self.nov = n2node.layer.nov
         bdic = {b:s.copy() for b, s in n2node.bitdic.items()}
         super().__init__(n2node.sat.copy(), bdic, n2node.clauses.copy())
         self.add_sat(n2node.sat_dic(name[1]))
         self.block = Blocker(self)
 
-    def clone(self):  # only for grown cluster (with 2 Layers: Layer1, Layer2)
+    def clone(self):  # only for grown cluster (with 2 layers: layer1, layer2)
         clu = Cluster(tuple(self.name), self)
         return clu
     
@@ -47,27 +47,29 @@ class Cluster(PathNode):
                     del self.bitdic[bit]
         
     def add_n2(self, n2, n2cv):
-        self.Layer2 = n2.Layer
+        self.layer2 = n2.layer
+        self.nxt_nv = self.layer2.nov - 3
+
         sat = n2.sat_dic(n2cv)
         if not self.add_sat(sat):
             return None
         for cl in n2.clauses.values():
             if not self.add_k2(cl):
                 return None
-        self.headsatbits = self.headsatbits.union(self.Layer2.bgrid.bitset)
+        self.headsatbits = self.headsatbits.union(self.layer2.bgrid.bitset)
         rsat = {}
         for b,sv in self.sat.items():
             if b not in self.headsatbits:
                 rsat[b] = self.sat[b]
         return rsat
 
-    def grow_with_filter(self, lower_Layer, filters):
-        for cv, cvn2 in lower_Layer.cvn2s.items():
+    def grow_with_filter(self, lower_layer, filters):
+        for cv, cvn2 in lower_layer.cvn2s.items():
             clu = self.clone()
             if type(clu.name) == tuple:
-                clu.name = [clu.name, (lower_Layer.nov, cv)]
+                clu.name = [clu.name, (lower_layer.nov, cv)]
             else:
-                clu.name.append((lower_Layer.nov, cv))
+                clu.name.append((lower_layer.nov, cv))
             excl_kns = []
             sat2b_added = []
             for filter in filters:  # filter: [set(lower-cvs), kn, <sat-dic>]
@@ -80,15 +82,15 @@ class Cluster(PathNode):
             for s in sat2b_added:
                 if not clu.add_sat(s):
                     return
-            new_Layer_sat = clu.add_n2(cvn2, cv)
+            new_layer_sat = clu.add_n2(cvn2, cv)
             name = tuple(clu.name)
-            clu.cvsats = {}
             if self.nov - 6 > Center.minnov:
                 clu.build_cvsats(Center.layers[self.nov - 6])
             Cluster.groups.setdefault(self.nov, []).append((name, clu))
-        x = 0
+        self.nxt_nv = lower_layer.nov - 3
 
     def build_cvsats(self, lyr):
+        self.cvsats = {}
         lheadbits = lyr.bgrid.bitset
         # 1. if self.sat touches lyr's head-bitset: cvs will be restricted
         # 2. if no touch, use all of the cvs of lyr
@@ -150,7 +152,7 @@ class Cluster(PathNode):
         lyr_filter = {}
         for ftr in filters:
             if ftr[0] == 'cluster':
-                clu.clauses.pop(ftr[1])
+                clu.remove_clause(ftr[1])
                 if ftr[2]:
                     if not clu.add_sat(ftr[2]):
                         return False
@@ -165,20 +167,27 @@ class Cluster(PathNode):
                 continue
             if not clu.add_k2(cl):
                 return False
+        nxt_nv = lyr.nov - 3
+        if nxt_nv >= Center.minnov:
+            next_lyr = Center.layers[nxt_nv]
+            clu.build_cvsats(next_lyr)
+            clu.nxt_nv = nxt_nv
+        else:
+            clu.nxt_nv = -1        
         return clu
         
 
 
 
 
-    def grow(self, lower_Layer):
-        for cv, cvn2 in lower_Layer.cvn2s.items():
+    def grow(self, lower_layer):
+        for cv, cvn2 in lower_layer.cvn2s.items():
             clu = Cluster(self.name, self.n2.clone())
             if clu.add_sat(self.sat):
                 if type(clu.name) == tuple:
-                    clu.name = [clu.name, (lower_Layer.nov, cv)]
+                    clu.name = [clu.name, (lower_layer.nov, cv)]
                 else:
-                    clu.name.append((lower_Layer.nov, cv))
+                    clu.name.append((lower_layer.nov, cv))
                 clu.add_n2(cvn2, cv)
                 name = tuple(clu.name)
                 Cluster.groups.setdefault(self.nov, []).append((name, clu))
@@ -194,13 +203,13 @@ class Cluster(PathNode):
             assert(b in self.sat), "tsat not qualified"
             if self.sat[b] != v:
                 if b in self.headsatbits:
-                    if b in self.Layer1.bgrid.bits:
-                        bgrid = self.Layer1.bgrid
-                        Layer_nov = self.Layer1.nov
+                    if b in self.layer1.bgrid.bits:
+                        bgrid = self.layer1.bgrid
+                        layer_nov = self.layer1.nov
                     else:
-                        bgrid = self.Layer2.bgrid
-                        Layer_nov = self.Layer2.nov
-                    return True, (Layer_nov, bgrid.bv2cvs(b, self.sat[b])[0])
+                        bgrid = self.layer2.bgrid
+                        layer_nov = self.layer2.nov
+                    return True, (layer_nov, bgrid.bv2cvs(b, self.sat[b])[0])
                 return True, None
         return False, None
 
@@ -222,12 +231,12 @@ class Cluster(PathNode):
             lower_nov = cl.nov - 6
             new_bits = set(c.sat) - set(old_sat)
             # in case there are new-sat(bits), 
-            # see if lower Layers' head on them
+            # see if lower layers' head on them
             if len(new_bits) > 0:
                 lnov = lower_nov
                 while lnov >= Center.minnov:
-                    bgrd = Center.snodes[lnov].Layer.bgrid
-                    bs = new_bits.intersection(bgrd.bitset) # Layer bit overlaps
+                    bgrd = Center.snodes[lnov].layer.bgrid
+                    bs = new_bits.intersection(bgrd.bitset) # layer bit overlaps
                     for b in bs:
                         v = c.sat[b]
                         c.block.add_block((lnov, bgrd.bv2cvs(b, v)[1]))
@@ -242,13 +251,13 @@ class Cluster(PathNode):
                 newgrp.append(g[1])
         return newgrp
 
-    def set_pblock(self, Layers):
+    def set_pblock(self, layers):
         bits = set(self.bitdic)
-        for Layer in Layers:
-            headbits = Layer.bgrid.bitset.intersection(self.bitdic)
-            print(f"{self.name}->{Layer.nov}: head-bits: {headbits}")
+        for layer in layers:
+            headbits = layer.bgrid.bitset.intersection(self.bitdic)
+            print(f"{self.name}->{layer.nov}: head-bits: {headbits}")
             if len(headbits) > 0:
-                self.block.set_pblock(headbits, Layer)
+                self.block.set_pblock(headbits, layer)
 
     def pblock_filter(self, pbdic, lower_clustr):
         ss = set(lower_clustr.name)

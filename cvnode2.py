@@ -1,9 +1,9 @@
 from pathnode import PathNode
 
 class CVNode2(PathNode):
-    def __init__(self, Layer, cv):
+    def __init__(self, layer, cv):
         super().__init__()
-        self.Layer = Layer
+        self.layer = layer
         if type(cv) == int:
             self.cvs = set([cv])
         elif type(cv) == set:
@@ -12,7 +12,7 @@ class CVNode2(PathNode):
         self.lower_blocks = set()
 
     def clone(self):
-        n2 = CVNode2(self.Layer, self.cvs.copy())
+        n2 = CVNode2(self.layer, self.cvs.copy())
         n2.bitdic = {b:s.copy() for b, s in self.bitdic.items() }
         n2.clauses = self.clauses.copy()
         n2.done = self.done
@@ -34,7 +34,7 @@ class CVNode2(PathNode):
 
     def sat_dic(self, cv):
         sdic = self.sat.copy()
-        sdic.update(self.Layer.bgrid.cv_sats[cv])
+        sdic.update(self.layer.bgrid.cv_sats[cv])
         return sdic
 
     def add_cvn2(self, cvn2):
