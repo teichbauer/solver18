@@ -131,6 +131,8 @@ class Cluster(PathNode):
                         if xkn in lyr.vk2dic:
                             vk = lyr.vk2dic[xkn]
                             res = self.clauses[kn].evaluate_overlap(vk)
+                            if res == 1:
+                                continue
                             for cv in vk.cvs:
                                 if cv in dic['cvs']:
                                     # when 2 vals in an ele in lst: 

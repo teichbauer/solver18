@@ -1,3 +1,8 @@
+## 2023-04-16->0.412
+- prpgress in pathfinder.py
+- fix in cluster.py
+- gone thru 60.1+57.1, 60.1+57.2. 
+  in 60.1+57.3 - 51.2 - 48.6, a bug hits ->fixed now
 ## 2023-04-14->0.411
 - refactoring in cluster
 - pahfinder/search: depth-first search progress

@@ -50,7 +50,8 @@ class PathFinder:
                 clu = cluster.grow_layercv(lyr, cv, filters)
                 if clu:
                     npool.append(clu)
-            return self.search(npool)
+            if not self.search(npool):
+                continue
         return None
 
     def collect_sats(self,cluster):
