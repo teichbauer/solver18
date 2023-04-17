@@ -19,7 +19,8 @@ class Clause:
         return Clause(self.kname, self.dic.copy(), self.mark)
 
     def evaluate_overlap(self, cl):
-        ''' Only for vk2, and only for self.bits == cl.bits            
+        ''' do not care about if self.cvs and cl.cvs overlaps or not
+        Only for vk2, and only for self.bits == cl.bits            
             1. self.dic == cl.dic - return 0: 
                 cl is a duplicate of self
             2. if self.dic[b0] == cl.dic[b0] and  self.dic[b1] != cl.dic[b1]

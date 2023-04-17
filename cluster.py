@@ -85,20 +85,20 @@ class Cluster(PathNode):
             new_layer_sat = clu.add_n2(cvn2, cv)
             name = tuple(clu.name)
             if self.nov - 6 > Center.minnov:
-                clu.build_cvsats(Center.layers[self.nov - 6])
-            Cluster.groups.setdefault(self.nov, []).append((name, clu))
+                if clu.build_cvsats(Center.layers[self.nov - 6]):
+                    Cluster.groups.setdefault(self.nov, []).append((name, clu))
         self.nxt_nv = lower_layer.nov - 3
 
 
     def set_satfilter(self, lyr):
-        # the self.sat can
-        # 1. touch lyr's head-bits, resulting cvs limitation
-        # 2. touch lyr.bitdic: 
-        #  2.1 making some vk2 -> sat under vk.cvs
-        #  2.2 if a vk has 2 bits touched sat - hit/voided
+        ''' the self.sat can
+            1. touch lyr's head-bits, resulting cvs limitation
+            2. touch lyr.bitdic: 
+              2.1 making some vk2 -> sat under vk.cvs
+              2.2 if a vk has 2 bits touched sat - hit/voided
+        '''
         self.cvsats = {}
-        # 1
-        lheadbits = lyr.bgrid.bitset
+        lheadbits = lyr.bgrid.bitset # ---------- 1 ---------------
         cvs = lyr.bgrid.chvset  # all cvs of lyr
         head_sat_bits = lheadbits.intersection(self.sat)
         if len(head_sat_bits) > 0:
@@ -106,36 +106,55 @@ class Cluster(PathNode):
                 allowed = lyr.bgrid.bv2cvs(cvtb, self.sat[cvtb])[0]
                 cvs = cvs.intersection(allowed)
         dic = self.cvsats.setdefault(lyr.nov, {})
-        dic['cvs'] = tuple(cvs)
-        # 2
-        sat_bs = set(self.sat)
+        dic['cvs'] = list(cvs)
+        sat_bs = set(self.sat)   # ---------- 2 ---------------
         bs = sat_bs.intersection(lyr.bdic)
         kns = set()
         for b in bs:
             kns.update(lyr.bdic[b])
         for kn in kns:
-            vk = lyr.clauses[kn]
+            vk = lyr.vk2dic[kn]
             tbits = sat_bs.intersection(vk.bits)
             if len(tbits) == 2:
                 if vk.hit(self.sat):
-                    return False
+                    for cv in vk.cvs:
+                        if cv in dic['cvs']:
+                            dic['cvs'].remove(cv)
+                            dic.pop(cv, None)
+                            if len(dic['cvs']) == 0:
+                                return
                 else:
                     for cv in vk.cvs:
                         if cv in dic['cvs']:
-                            dic.setdefault(cv,[]).append(vk.kname, None)
+                            dic.setdefault(cv,[]).append((vk.kname, None))
             else:  # 1 bit of vk in sat
-                obit = vk.other_bit(tbits.pop())
-                if not self.add_sat({obit: int(not vk.dic[obit])}):
-                    return False
-        return True
-        
-
-
+                b = tbits.pop()
+                if vk.dic[b] == self.sat[b]:
+                    obit = vk.other_bit(b)
+                    nsat = {obit: int(not vk.dic[obit])}
+                    if obit in self.sat:  # new sat touched self.sat
+                        if self.sat[obit] != nsat[obit]: # sat-conflict
+                            for cv in vk.cvs:            # remove this cv
+                                if cv in dic['cvs']:     # if it is in dic[cvs]
+                                    dic['cvs'].remove(cv) # from dic[cvs]
+                                    dic.pop(cv, None)    # pop out cv totally
+                                    if len(dic['cvs']) == 0:
+                                        return None
+                    else: # nsat does not touch self.sat
+                        for cv in vk.cvs:
+                            if cv in dic['cvs']:
+                                dic.setdefault(cv,[]).append((vk.kname, nsat))
+                else:  # vk.dic[b] != self.sat[b] -> this vk be dropped
+                    for cv in vk.cvs:
+                        if cv in dic['cvs']:
+                            dic.setdefault(cv,[]).append((vk.kname, None))
+        return self.cvsats[lyr.nov]
+    
     def build_cvsats(self, lyr):
-        self.set_satfilter(lyr)
-        
+        dic = self.set_satfilter(lyr)
+        if not dic: return None
         # lyr-head-bit touch cluster(self).tail(vk2-bits)?
-        head_tail_bits = lheadbits.intersection(self.bitdic)
+        head_tail_bits = lyr.bgrid.bitset.intersection(self.bitdic)
         if len(head_tail_bits) > 0:
             for b in head_tail_bits:
                 for kn in self.bitdic[b]:
@@ -156,27 +175,29 @@ class Cluster(PathNode):
                                 lst.append(t) # no sat
         # find double (both bits)touch vk-pairs btwn lyr.vk2 and self.vk2s
         touch_bits = set(lyr.bdic).intersection(self.bitdic)
-        for tb in touch_bits:
-            for kn in self.bitdic[tb]:
-                if kn in Center.vk2pairs:
-                    for xkn in Center.vk2pairs[kn]:
-                        if xkn in lyr.vk2dic:
-                            vk = lyr.vk2dic[xkn]
-                            res = self.clauses[kn].evaluate_overlap(vk)
-                            if res == 1:
-                                continue
-                            for cv in vk.cvs:
-                                if cv in dic['cvs']:
-                                    # when 2 vals in an ele in lst: 
-                                    # cut-off from lyr
-                                    lst = dic.setdefault(cv,[])
-                                    if type(res) == dict:
-                                        t = (vk.kname, res)  # add sat
-                                    elif res == 0:
-                                        t = (vk.kname, None) # no sat
-                                    if t not in lst:
-                                        lst.append(t) 
-        x = 0
+        kns = set()
+        for b in touch_bits:    # collect lyr-kns touching self.clauses
+            kns.update(self.bitdic[b])
+        kns = kns.intersection(Center.vk2pairs)
+        for kn in kns:
+            for xkn in Center.vk2pairs[kn]:
+                if xkn in lyr.vk2dic:
+                    vk = lyr.vk2dic[xkn]
+                    res = self.clauses[kn].evaluate_overlap(vk)
+                    if res == 1:
+                        continue
+                    for cv in vk.cvs:
+                        if cv in dic['cvs']:
+                            # when 2 vals in an ele in lst, cut-off from lyr
+                            lst = dic.setdefault(cv,[])
+                            if type(res) == dict:
+                                b,v = res.popitem()
+                                nsat = {b: int(not v)}
+                                lst.append((vk.kname, nsat))  # add sat
+                            elif res == 0:
+                                lst.append((vk.kname, None))  # no sat
+        return True
+    # end of: ----- def build_cvsats(self, lyr):
 
     def grow_layercv(self, lyr, cv, filters):
         cvn2 = lyr.cvn2s[cv]
@@ -204,7 +225,8 @@ class Cluster(PathNode):
         clu.name.append((lyr.nov, cv))
         if nxt_nv >= Center.minnov:
             next_lyr = Center.layers[nxt_nv]
-            clu.build_cvsats(next_lyr)
+            if not clu.build_cvsats(next_lyr):
+                return False
             clu.nxt_nv = nxt_nv
         else:
             clu.nxt_nv = -1

@@ -1,3 +1,7 @@
+## 2023-04-17->0.414
+- refactored cluster, to set cluster.sat occluding 
+  lyr.vk2dic, generating new sat, or, if a vk has 2 bits in sat,
+  gets hit, so that its cvs will be dropped out od the path.
 ## 2023-04-16->0.413
 - new: cluster.set_satfilter, finding cluster.sat touching
   lyr's bidic that can be sat-hit, or drop kn, or new sat.

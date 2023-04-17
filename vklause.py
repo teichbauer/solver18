@@ -21,6 +21,11 @@ class VKlause:
     def hbit_value(self): # return pair: bit[0], val[bts[0]]
         b = self.bits[0]
         return b, self.dic[b]
+    
+    def other_bit(self, bit):
+        bits = self.bits[:]
+        bits.remove(bit)
+        return bits[0]
 
     def sat1(self): # only for vk1
         b, v = self.hbit_value()
