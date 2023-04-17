@@ -89,11 +89,16 @@ class Cluster(PathNode):
             Cluster.groups.setdefault(self.nov, []).append((name, clu))
         self.nxt_nv = lower_layer.nov - 3
 
-    def build_cvsats(self, lyr):
+
+    def set_satfilter(self, lyr):
+        # the self.sat can
+        # 1. touch lyr's head-bits, resulting cvs limitation
+        # 2. touch lyr.bitdic: 
+        #  2.1 making some vk2 -> sat under vk.cvs
+        #  2.2 if a vk has 2 bits touched sat - hit/voided
         self.cvsats = {}
+        # 1
         lheadbits = lyr.bgrid.bitset
-        # 1. if self.sat touches lyr's head-bitset: cvs will be restricted
-        # 2. if no touch, use all of the cvs of lyr
         cvs = lyr.bgrid.chvset  # all cvs of lyr
         head_sat_bits = lheadbits.intersection(self.sat)
         if len(head_sat_bits) > 0:
@@ -102,6 +107,33 @@ class Cluster(PathNode):
                 cvs = cvs.intersection(allowed)
         dic = self.cvsats.setdefault(lyr.nov, {})
         dic['cvs'] = tuple(cvs)
+        # 2
+        sat_bs = set(self.sat)
+        bs = sat_bs.intersection(lyr.bdic)
+        kns = set()
+        for b in bs:
+            kns.update(lyr.bdic[b])
+        for kn in kns:
+            vk = lyr.clauses[kn]
+            tbits = sat_bs.intersection(vk.bits)
+            if len(tbits) == 2:
+                if vk.hit(self.sat):
+                    return False
+                else:
+                    for cv in vk.cvs:
+                        if cv in dic['cvs']:
+                            dic.setdefault(cv,[]).append(vk.kname, None)
+            else:  # 1 bit of vk in sat
+                obit = vk.other_bit(tbits.pop())
+                if not self.add_sat({obit: int(not vk.dic[obit])}):
+                    return False
+        return True
+        
+
+
+    def build_cvsats(self, lyr):
+        self.set_satfilter(lyr)
+        
         # lyr-head-bit touch cluster(self).tail(vk2-bits)?
         head_tail_bits = lheadbits.intersection(self.bitdic)
         if len(head_tail_bits) > 0:
@@ -149,8 +181,6 @@ class Cluster(PathNode):
     def grow_layercv(self, lyr, cv, filters):
         cvn2 = lyr.cvn2s[cv]
         clu = self.clone()
-        clu.name = self.name[:]
-        clu.name.append((lyr.nov, cv))
         lyr_filter = {}
         for ftr in filters:
             if ftr[0] == 'cluster':
@@ -170,16 +200,16 @@ class Cluster(PathNode):
             if not clu.add_k2(cl):
                 return False
         nxt_nv = lyr.nov - 3
+        clu.name = self.name[:]
+        clu.name.append((lyr.nov, cv))
         if nxt_nv >= Center.minnov:
             next_lyr = Center.layers[nxt_nv]
             clu.build_cvsats(next_lyr)
             clu.nxt_nv = nxt_nv
         else:
-            clu.nxt_nv = -1        
+            clu.nxt_nv = -1
         return clu
         
-
-
 
 
     def grow(self, lower_layer):

@@ -57,9 +57,6 @@ class PathFinder:
     def collect_sats(self,cluster):
         x = 9        
 
-    def search_down(self, cluster):
-        cluster.search_next()
-
     def grow_cluster(self, layer_nv):
         while layer_nv > Center.minnov:
             layer = Center.layers[layer_nv]

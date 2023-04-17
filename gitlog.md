@@ -1,3 +1,6 @@
+## 2023-04-16->0.413
+- new: cluster.set_satfilter, finding cluster.sat touching
+  lyr's bidic that can be sat-hit, or drop kn, or new sat.
 ## 2023-04-16->0.412
 - prpgress in pathfinder.py
 - fix in cluster.py
