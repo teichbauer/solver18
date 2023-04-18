@@ -44,12 +44,19 @@ class PathFinder:
                 continue
             lyr = Center.layers[nv]
             cvdic = cluster.cvsats[nv]
+            print("----------------")
+            print(f"cluster:{cluster.name}-[{cvdic['cvs']}]")
             npool = []
             for cv in cvdic['cvs']:
                 filters = cvdic.get(cv, [])
+                print(f"lyr({nv}-{cv}):")
                 clu = cluster.grow_layercv(lyr, cv, filters)
                 if clu:
+                    nxnv = lyr.nov - 3
+                    print(f"next-cvs:{clu.cvsats[nxnv]['cvs']}")
                     npool.append(clu)
+                else:
+                    print(f"lyr({nv}-{cv}) failed")
             if not self.search(npool):
                 continue
         return None

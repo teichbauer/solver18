@@ -1,3 +1,7 @@
+## 2023-04-17->0.415
+- some tracing when finding path.
+- printouts saved in 412-20230415-paths.txt
+  till cluster:[(60, 1), (57, 3), (54, 0), (51, 3), (48, 7)]-[[5]]
 ## 2023-04-17->0.414
 - refactored cluster, to set cluster.sat occluding 
   lyr.vk2dic, generating new sat, or, if a vk has 2 bits in sat,
