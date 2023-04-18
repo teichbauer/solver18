@@ -191,7 +191,7 @@ class Cluster(PathNode):
                             # when 2 vals in an ele in lst, cut-off from lyr
                             lst = dic.setdefault(cv,[])
                             if type(res) == dict:
-                                b,v = res.popitem()
+                                b,v = res.copy().popitem()
                                 nsat = {b: int(not v)}
                                 lst.append((vk.kname, nsat))  # add sat
                             elif res == 0:

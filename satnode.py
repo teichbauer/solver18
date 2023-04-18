@@ -121,7 +121,7 @@ class SatNode:
                 nv -= 3
 
             pfinder = PathFinder()
-            pfinder.find_solutions()
+            
             x = 1
 
     def path_sat(self, pname):

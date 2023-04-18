@@ -1,3 +1,9 @@
+## 2023-04-18->0.416
+- fix a bug in cluster:194
+- add print-outs in pathfinder, for analysis
+- reached pathfinder.collect_sats for a bottom cluster named:
+  [(60, 1), (57, 4), (54, 2), (51, 1), (48, 5), (45, 4), (42, 7), (39, 0), 
+   (36, 2), (33, 0), (30, 7), (27, 5), (24, 7), (21, 6)]
 ## 2023-04-17->0.415
 - some tracing when finding path.
 - printouts saved in 412-20230415-paths.txt
