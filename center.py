@@ -7,6 +7,7 @@ class Center:
     minnov = 0
     headbits = {}  # {<nov>:(3 bits)}
     bits = set([])
+    tailbits = set()
     sats = []
     snodes = {}
     blocker_dic = {}  # {<bit>:{}}
@@ -68,6 +69,7 @@ class Center:
     def set_maxnov(cls, nov):
         cls.maxnov = nov
         cls.bits = set(range(nov))
+        cls.tailbits = cls.bits.copy()
 
     @classmethod
     def bit_overlaps(cls, nov):

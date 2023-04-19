@@ -52,7 +52,7 @@ class SatNode:
                 Center.add_vk2(vk12)
         # display_vkdic(show_vkdic)
         self.layer = Layer(self.bgrid, vk2dic, bdic, block_bv_dic)
-                
+        Center.tailbits = Center.tailbits - self.layer.bgrid.bitset
         self.find_overlapped_vks()
         x = 0
     # ---- def split_vkm(self) --------

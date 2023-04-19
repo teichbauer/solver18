@@ -1,3 +1,7 @@
+## 2023-04-18->0.417
+- saved all in solver18-416
+- clear up a bit. 
+- Center.tailbits, and cluster.headsatbits
 ## 2023-04-18->0.416
 - fix a bug in cluster:194
 - add print-outs in pathfinder, for analysis
