@@ -1,3 +1,5 @@
+## 2023-04-19->0.418
+- add layer.grid_sat to cluster.sat
 ## 2023-04-18->0.417
 - saved all in solver18-416
 - clear up a bit. 

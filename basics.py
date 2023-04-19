@@ -143,6 +143,13 @@ def sortdic(d):
        dd[k] = d[k]
     return dd
 
+def my_setdiff(s0, s1):
+    lst = []
+    for e in s0:
+        if e not in s1:
+            lst.append(e)
+    return set(lst)
+
 def display_vkdic(vkd, title=None, outfile=None):
     kns = sorted(vkd.keys())
     kns.sort()

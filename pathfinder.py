@@ -1,6 +1,6 @@
 from center import Center
 from cluster import Cluster
-from basics import sortdic, print_bitdic, print_clause_dic, test_clauses
+from basics import sortdic, print_bitdic, print_clause_dic, my_setdiff
 
 class PathFinder:
     def __init__(self):
@@ -35,7 +35,8 @@ class PathFinder:
     def search(self, pool, lyr):
         while len(pool):
             cluster = pool.pop(0)
-            if cluster.name == [(60, 1), (57, 4), (54, 2), (51, 1), (48, 5), (45, 4), (42, 7), (39, 0), (36, 2), (33, 0), (30, 7), (27, 5), (24, 7)]:
+            # if cluster.name == [(60, 1), (57, 4), (54, 2), (51, 1), (48, 5), (45, 4), (42, 7), (39, 0), (36, 2), (33, 0), (30, 7), (27, 5), (24, 7)]:
+            if cluster.name == [(60, 1), (57, 4)]:
                 x = 0
             nv = cluster.nxt_nv
             if nv == -1:
@@ -51,6 +52,9 @@ class PathFinder:
                 print(f"lyr({nv}-{cv}):")
                 clu = cluster.grow_layercv(lyr, cv, filters)
                 if clu:
+                    lyrcv_sat = lyr.bgrid.grid_sat(cv)
+                    lyrcv_sat_res = clu.add_sat(lyrcv_sat)
+                if clu and lyrcv_sat_res:
                     if clu.nxt_nv == -1:
                         print(f"bottom: {clu.name}")
                     else:
