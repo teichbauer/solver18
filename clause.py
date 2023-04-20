@@ -16,7 +16,10 @@ class Clause:
         return None
 
     def clone(self):  
-        return Clause(self.kname, self.dic.copy(), self.mark)
+        newclause = Clause(self.kname, self.dic.copy(), self.mark)
+        if 'okname' in self.__dict__:
+            newclause.okname = self.okname
+        return newclause
 
     def evaluate_overlap(self, cl):
         ''' do not care about if self.cvs and cl.cvs overlaps or not

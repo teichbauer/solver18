@@ -147,6 +147,7 @@ class Layer:
         self.remove_vk2(vkb.kname)
         self.remove_kn2_from_cvk_dic(vkb.cvs, vkb.kname)
         self.combos.append((vka, vkb))
+        vk2.okname = f"{vka.kname}+{vkb.kname}"
         self.vk2dic[vk2.kname] = vk2
         x = 0
 

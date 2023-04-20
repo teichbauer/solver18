@@ -213,16 +213,16 @@ class Cluster(PathNode):
                         return False
             else:
                 lyr_filter[ftr[0]] = ftr[1]
-        for kn, cl in cvn2.clauses.items():
-            if kn in lyr_filter:
-                st = lyr_filter[kn]
-                if st:
-                    if not clu.add_sat(st):
-                        print(f"lyr({lyr.nov}-{cv})-kn:{kn}: sat:{st}")
-                        return False
-                continue
+        clauses = cvn2.clauses.copy()
+        for kn, xsat in lyr_filter.items():
+            clauses.pop(kn, None)
+            if xsat:
+                if not clu.add_sat(xsat): 
+                    print(f"failed:lyr({lyr.nov}-{cv})-kn:{kn}: sat:{xsat}")
+                    return False
+        for kn, cl in clauses.items():
             if not clu.add_k2(cl):
-                print(f"lyr({lyr.nov}-{cv})-kn:{cl.kname}")
+                print(f"failed:lyr({lyr.nov}-{cv})-kn:{kn}")
                 return False
         nxt_nv = lyr.nov - 3
         clu.name = self.name[:]

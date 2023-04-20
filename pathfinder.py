@@ -71,13 +71,13 @@ class PathFinder:
         return None
 
     def collect_sats(self,cluster):
-        sat = {}
-        for t in cluster.name:
-            nov, cv = t
-            sat.update(Center.layers[nov].bgrid.grid_sat(cv))
         for kn, vk3 in Center.orig_vkm.vkdic.items():
-            bits = set(sat).intersection(vk3.bits)
-            ssat = { b:sat[b] for b in bits }
-            print(f"{kn}: {vk3.dic} <=> {ssat}")
+            bits = set(cluster.sat).intersection(vk3.bits)
+            ssat = { b:cluster.sat[b] for b in bits }
+            m = f"{kn}: {vk3.dic}\t"
+            L = 'O'
+            if vk3.hit(ssat):
+                L = 'H'
+            print(f"{m} <=> {ssat}  : {L}")
             x = 0
         x = 9

@@ -30,6 +30,8 @@ class PathNode:
             cl = Clause(vk.kname, dic, vk.mark)
         else:
             cl = Clause(vk.kname, dic, (vk.nov, tuple(vk.cvs)))
+            if 'okname' in vk.__dict__:
+                cl.okname = vk.okname
 
         if len(touch) == 2:   # 2 bits in self.bitdic
             # collect kns that share 1 or 2 bit

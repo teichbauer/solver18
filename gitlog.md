@@ -1,3 +1,6 @@
+## 2023-04-20->0.419
+- for COMBOn vk, add okname containing the old 2 knames
+- cluster grow_layercv: handle lyr_filter better
 ## 2023-04-19->0.418
 - add layer.grid_sat to cluster.sat
 ## 2023-04-18->0.417
