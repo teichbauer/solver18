@@ -1,3 +1,6 @@
+## 2023-04-25->0.422
+- docs/20230425-analysisOfblock-dic.txt
+- Cluster.layers: an list replacing layer1/layer2
 ## 2023-04-24->0.421
 - BlockChecker.Layer -> BlockChecker.layer
 - BlockChecker handles len(dd) == 2 -> filling cvsats]'*'].append(sat)

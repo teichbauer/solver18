@@ -21,11 +21,13 @@ class BlockChecker:
                             nvlst = cvd.setdefault(e2[0],[])
                             nvlst.append(entry)
                     elif len(dd) == 2:
-                        kn = dd.pop('kn')
-                        bit, cvs = dd.popitem()
+                        kn = dd.pop('kn', None)
+                        cvs = dd.get(self.layer.nov, [])
                         for cv in cvs:
                             lst = self.layer.cvsats[cv].setdefault('*',[])
-                            lst.append({vbit: int(not bv)})
+                            sat = {vbit: int(not bv)}
+                            if sat not in lst:
+                                lst.append(sat)
                 x = 0
             x = 8
         x = 9

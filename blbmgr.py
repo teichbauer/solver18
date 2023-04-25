@@ -67,10 +67,10 @@ class BlbManager:
             kn2s = self.owner.bdic.get(bit, []).copy()
             if len(kn2s) == 0:
                 continue
+            xkn = bv_cvs_dic.pop('kn', None)
             for kn2 in kn2s:
                 vk2 = self.owner.vk2dic[kn2]
                 for bv,  xcvs in bv_cvs_dic.items():
-                # for xcvs, xsat in cvs_sat_lst:
                     comm_cvs = vk2.cvs.intersection(xcvs)
                     if len(comm_cvs) > 0:
                         # since vk2 in vk2dic is a ref, and here the vk2

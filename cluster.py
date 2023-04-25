@@ -8,14 +8,11 @@ class Cluster(PathNode):
 
     def __init__(self, name, n2node):
         self.name = name
+        self.layers = []
         if type(n2node) == Cluster:  # n2node is a cluster clone it
             self.n2 = n2node.n2
             self.nov = n2node.nov
-            self.layer1 = n2node.layer1
-            if 'layer2' in n2node.__dict__:
-                self.layer2 = n2node.layer2
-            else:
-                self.layer2 = None
+            self.layers = n2node.layers[:]
             self.sat = {b: v for b, v in n2node.sat.items()}
             self.bitdic = {b:s.copy() for b, s in n2node.bitdic.items() }
             self.clauses = n2node.clauses.copy()
@@ -25,7 +22,7 @@ class Cluster(PathNode):
             return # cloning done
         # type(n2node) == CVNode2
         self.n2 = n2node
-        self.layer1 = n2node.layer
+        self.layers.append(n2node.layer)
         self.headsatbits = n2node.layer.bgrid.bitset.copy()
         self.nov = n2node.layer.nov
         bdic = {b:s.copy() for b, s in n2node.bitdic.items()}
@@ -33,7 +30,7 @@ class Cluster(PathNode):
         self.add_sat(n2node.sat_dic(name[1]))
         self.block = Blocker(self)
 
-    def clone(self):  # only for grown cluster (with 2 layers: layer1, layer2)
+    def clone(self):  # only for grown cluster
         clu = Cluster(tuple(self.name), self)
         return clu
     
@@ -247,9 +244,9 @@ class Cluster(PathNode):
             assert(b in self.sat), "tsat not qualified"
             if self.sat[b] != v:
                 if b in self.headsatbits:
-                    if b in self.layer1.bgrid.bits:
-                        bgrid = self.layer1.bgrid
-                        layer_nov = self.layer1.nov
+                    if b in self.layers[0].bgrid.bits:
+                        bgrid = self.layers[0].bgrid
+                        layer_nov = self.layers[0].nov
                     else:
                         bgrid = self.layer2.bgrid
                         layer_nov = self.layer2.nov

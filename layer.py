@@ -40,7 +40,7 @@ class Layer:
         if block_bv_dic != None:  # block_bv_dic==None: for clone
             self.sort_vks(vk2dic)
             self.blbmgr = BlbManager(self, block_bv_dic) 
-        # find pairs of vk2s (vka, vkb) bitting on the same 2 bits, and
+        # find 2 vk2s (vka, vkb) sitting on the same 2 bits, and
         # vka.cvs vkb.cvs do have intersection -> tuple_lst  list of tuples:
         #  (vka, vkb, sat_tpl, xcvs)
         tuple_lst = self.proc_pairs()
