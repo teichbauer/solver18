@@ -4,33 +4,27 @@ from basics import sortdic, print_bitdic, print_clause_dic, my_setdiff
 
 class PathFinder:
     def __init__(self):
-        self.cluster_groups = Cluster.groups
         for nv in sorted(Center.layers):
             layer = Center.layers[nv]
             layer.bchecker.make_cvsats()
             # msg = layer.bchecker.show_cvsats(layer.cvsats)
-        self.grow_pairs(60)
-        clupool = [pa[1] for pa in Cluster.groups[60]]
+        clupool = self.grow_pair_pool(60)
         self.search(clupool, Center.layers[54])        
 
-    def grow_pairs(self, hnv):  # paring layers: high-nov to lower-nov
-        while hnv >= Center.minnov:
-            if hnv == Center.minnov:
-                break
-            highlayer, lowlayer = Center.layers[hnv], Center.layers[hnv-3]
-            for cv, cvn2 in highlayer.cvn2s.items():
-                cluster = Cluster((hnv, cv), cvn2)
-                d = highlayer.cvsats[cv].get('*', None)
-                if d and not cluster.add_sat(d[0]):
-                    continue
-                filters = []
-                if lowlayer.nov in highlayer.cvsats[cv]:
-                    filters = highlayer.cvsats[cv][lowlayer.nov]
-                cluster.grow_with_filter(lowlayer, filters)
-                x = 0
-            break   # just build 60-57 pairs: 7x7=49
-            hnv -= 6
-        x = 9
+    def grow_pair_pool(self, hnv):  # paring layers: high-nov to lower-nov
+        pair_pool = []
+        highlayer, lowlayer = Center.layers[hnv], Center.layers[hnv-3]
+        for cv, cvn2 in highlayer.cvn2s.items():
+            cluster = Cluster((hnv, cv), cvn2)
+            d = highlayer.cvsats[cv].get('*', None)
+            if d and not cluster.add_sat(d[0]):
+                continue
+            filters = []
+            if lowlayer.nov in highlayer.cvsats[cv]:
+                filters = highlayer.cvsats[cv][lowlayer.nov]
+            cluster.grow_pairs(lowlayer, filters, pair_pool)
+            x = 0
+        return pair_pool
 
     def search(self, pool, lyr):
         while len(pool):
@@ -46,7 +40,7 @@ class PathFinder:
             cvdic = cluster.cvsats[nv]
             print("----------------")
             print(f"cluster:{cluster.name}-[{cvdic['cvs']}]")
-            npool = []
+            npool = []   # new pool for next layer
             for cv in cvdic['cvs']:
                 filters = cvdic.get(cv, [])
                 print(f"lyr({nv}-{cv}):")

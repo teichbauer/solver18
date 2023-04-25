@@ -5,7 +5,6 @@ from basics import sortdic, print_clause_dic, print_bitdic
 
 class Cluster(PathNode):
     clusters = {}
-    groups = {}
 
     def __init__(self, name, n2node):
         self.name = name
@@ -63,7 +62,7 @@ class Cluster(PathNode):
                 rsat[b] = self.sat[b]
         return rsat
 
-    def grow_with_filter(self, lower_layer, filters):
+    def grow_pairs(self, lower_layer, filters, pool):
         for cv, cvn2 in lower_layer.cvn2s.items():
             clu = self.clone()
             if type(clu.name) == tuple:
@@ -71,10 +70,10 @@ class Cluster(PathNode):
             else:
                 clu.name.append((lower_layer.nov, cv))
             excl_kns = []
-            sat2b_added = []
-            for filter in filters:  # filter: [set(lower-cvs), kn, <sat-dic>]
-                if cv in filter[0]:
-                    kn, sat = filter[1:]
+            sat2b_added = []                # filter: 0,        1,     2
+            for filter in filters:          # [set(lower-cvs), clu-kn, <sat>]
+                if cv in filter[0]:         # filter[0] is a set of cvs
+                    kn, sat = filter[1:]    # filter[1]:kn, filter[2]:sat
                     excl_kns.append(kn)
                     sat2b_added.append(sat)
             for kn in excl_kns:
@@ -86,7 +85,7 @@ class Cluster(PathNode):
             name = tuple(clu.name)
             if self.nov - 6 > Center.minnov:
                 if clu.build_cvsats(Center.layers[self.nov - 6]):
-                    Cluster.groups.setdefault(self.nov, []).append((name, clu))
+                    pool.append(clu)
         self.nxt_nv = lower_layer.nov - 3
 
 

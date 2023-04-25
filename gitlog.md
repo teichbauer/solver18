@@ -1,3 +1,14 @@
+## 2023-04-24->0.421
+- BlockChecker.Layer -> BlockChecker.layer
+- BlockChecker handles len(dd) == 2 -> filling cvsats]'*'].append(sat)
+- cluster.grow_with_filter -> grow_pairs( + pool)
+  Cluster.groups: removd
+- PathFinder.grow_pairs -> grow_pair_pool
+- documents: 20230412-design-tail.txt
+  20230422-analysisOfblockcheck-dic.txt
+  20230424ov-cvs.txt
+## 2023-04-21->0.420
+- clean up
 ## 2023-04-20->0.419
 - for COMBOn vk, add okname containing the old 2 knames
 - cluster grow_layercv: handle lyr_filter better

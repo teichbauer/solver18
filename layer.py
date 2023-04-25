@@ -26,26 +26,19 @@ def merge_vkpair(vk2a, vk2b): # vk2a and vk2b must have common-cvs
     t = s.pop()
     return t
 
+
 class Layer:
     def __init__(self, bgrid, vk2dic, bitdic, block_bv_dic=None):
         self.bgrid = bgrid
         self.nov = bgrid.nov
         self.vk2dic = vk2dic
-        self.cvsats = {}
+        self.cvsats = {cv: {} for cv in bgrid.chvset}
         self.combos = []
         # vk2-bdic : all vk1s will be removed in sort_vks
         self.bdic = self.copy_bdic(bitdic)
         self.bchecker = BlockChecker(self)
         if block_bv_dic != None:  # block_bv_dic==None: for clone
             self.sort_vks(vk2dic)
-            for b, satdic in block_bv_dic.items():
-                for bv, bcvs in satdic.items():
-                    if bv != 'kn':
-                        v, cvs = bv, bcvs
-                        for cv in cvs:
-                            dic = self.cvsats.setdefault(cv, {})
-                            dic.setdefault('*',[]).append({b: int(not v)})
-                x = 0
             self.blbmgr = BlbManager(self, block_bv_dic) 
         # find pairs of vk2s (vka, vkb) bitting on the same 2 bits, and
         # vka.cvs vkb.cvs do have intersection -> tuple_lst  list of tuples:
@@ -57,6 +50,9 @@ class Layer:
         Center.layers[self.nov] = self
         # generate: self.node2s and self.cvn2s
         self.generate_n2s()
+
+    def fill_cvsats(self, block_dic, lower_lyr):
+        pass
 
     def sort_vks(self, vk2dic):  # fill self.cvks_dic
         self.cvks_dic = {v: set([]) for v in self.bgrid.chvset }
@@ -117,9 +113,9 @@ class Layer:
                     else:
                         xcvs = vks[i].cvs.intersection(xvk.cvs)  # common cvs
                         if len(xcvs) > 0:  # vk-i and xvk share xcvs != {}
-                            sat_tpl = merge_vkpair(vks[i], xvk)
-                            if sat_tpl:
-                                pairs.append((vks[i], xvk, sat_tpl, xcvs))
+                            vk1 = merge_vkpair(vks[i], xvk)
+                            if vk1:
+                                pairs.append((vks[i], xvk, vk1, xcvs))
                 x += 1
             i += 1        
         for vka, vkb in combo_pairs:
@@ -187,7 +183,7 @@ class Layer:
         for vka, vkb, stpl, cvs in pair_tpls:
             vka1 = vka.clone()
             kna = vka.kname
-            vka1.pop_cvs(cvs)
+            vka1.pop_cvs(cvs)  # for every cv in cvs, sat replace vka/vkb
             if len(vka1.cvs) == 0:
                 self.remove_vk2(kna)
             else:
