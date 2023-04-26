@@ -29,8 +29,12 @@ class PathFinder:
     def search(self, pool, lyr):
         while len(pool):
             cluster = pool.pop(0)
-            # if cluster.name == [(60, 1), (57, 4), (54, 2), (51, 1), (48, 5), (45, 4), (42, 7), (39, 0), (36, 2), (33, 0), (30, 7), (27, 5), (24, 7)]:
-            if cluster.name == [(60, 1), (57, 4)]:
+            # if cluster.name == 
+            # [(60, 1), (57, 4), (54, 2), (51, 1), (48, 5), 
+            #  (45, 4), (42, 7), (39, 0), (36, 2), (33, 0), 
+            #  (30, 7), (27, 5), (24, 7), (21, 6)]:
+            # if cluster.name == [(60, 1), (57, 4), (54, 2), (51, 1)]:
+            if cluster.name == [(60, 1), (57, 4), (54, 2)]:
                 x = 0
             nv = cluster.nxt_nv
             if nv == -1:

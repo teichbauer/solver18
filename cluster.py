@@ -1,6 +1,6 @@
 from center import Center
 from pathnode import PathNode
-from blocker import Blocker
+# from blocker import Blocker
 from basics import sortdic, print_clause_dic, print_bitdic
 
 class Cluster(PathNode):
@@ -17,8 +17,6 @@ class Cluster(PathNode):
             self.bitdic = {b:s.copy() for b, s in n2node.bitdic.items() }
             self.clauses = n2node.clauses.copy()
             self.headsatbits = n2node.headsatbits.copy()
-            self.block = n2node.block.clone()
-            self.pblock = {}
             return # cloning done
         # type(n2node) == CVNode2
         self.n2 = n2node
@@ -28,7 +26,6 @@ class Cluster(PathNode):
         bdic = {b:s.copy() for b, s in n2node.bitdic.items()}
         super().__init__(n2node.sat.copy(), bdic, n2node.clauses.copy())
         self.add_sat(n2node.sat_dic(name[1]))
-        self.block = Blocker(self)
 
     def clone(self):  # only for grown cluster
         clu = Cluster(tuple(self.name), self)

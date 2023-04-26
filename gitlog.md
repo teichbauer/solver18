@@ -1,3 +1,13 @@
+## 2023-04-25->0.423
+- get rid of cluster.block/,pblock
+- in the wrong sat with path:
+  [(60, 1), (57, 4), (54, 2), (51, 1), (48, 5), (45, 4), (42, 7), (39, 0),    
+   (36, 2), (33, 0), (30, 7), (27, 5), (24, 7), (21, 6)]
+  there were 4 hits:
+  C0068: {12: 0, 18: 1, 37: 0} :H  nov 33
+  C0139: {9: 1, 38: 1, 39: 0}  :H  nov 51
+  C0181: {3: 0, 34: 1, 47: 1}  :H  nov 54
+  C0195: {8: 1, 42: 1, 54: 1}  :H  nov 30
 ## 2023-04-25->0.422
 - docs/20230425-analysisOfblock-dic.txt
 - Cluster.layers: an list replacing layer1/layer2
