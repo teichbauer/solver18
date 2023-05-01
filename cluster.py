@@ -207,9 +207,9 @@ class Cluster(PathNode):
                 clu.remove_clause(ftr[1])
                 if ftr[2]:
                     if not clu.add_sat(ftr[2]):
-                        print(
-                            f"lyr({lyr.nov}-{cv})-cluster-kn:{ftr[1]}: sat:{ftr[2]}"
-                        )
+                        # print(
+                        #     f"lyr({lyr.nov}-{cv})-cluster-kn:{ftr[1]}: sat:{ftr[2]}"
+                        # )
                         return False
             else:
                 lyr_filter[ftr[0]] = ftr[1]
@@ -218,11 +218,11 @@ class Cluster(PathNode):
             clauses.pop(kn, None)
             if xsat:
                 if not clu.add_sat(xsat): 
-                    print(f"failed:lyr({lyr.nov}-{cv})-kn:{kn}: sat:{xsat}")
+                    # print(f"failed:lyr({lyr.nov}-{cv})-kn:{kn}: sat:{xsat}")
                     return False
         for kn, cl in clauses.items():
             if not clu.add_k2(cl):
-                print(f"failed:lyr({lyr.nov}-{cv})-kn:{kn}")
+                # print(f"failed:lyr({lyr.nov}-{cv})-kn:{kn}")
                 return False
         nxt_nv = lyr.nov - 3
         clu.name = self.name[:]
@@ -230,7 +230,7 @@ class Cluster(PathNode):
         if nxt_nv >= Center.minnov:
             next_lyr = Center.layers[nxt_nv]
             if not clu.build_cvsats(next_lyr):
-                print(f"lyr({lyr.nov}-{cv}): no [cvs]")
+                # print(f"lyr({lyr.nov}-{cv}): no [cvs]")
                 return False
             clu.nxt_nv = nxt_nv
         else:

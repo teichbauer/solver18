@@ -34,7 +34,6 @@ class SatNode:
 
         block_bv_dic = {}
         print(f"------- {self.nov} -----------")
-        # show_vkdic = {}
         for kn in self.touched:
             vk = self.vkm.pop_vk(kn)        # pop out 3vk
             vk12 = self.bgrid.reduce_vk(vk) # make it vk12
@@ -50,7 +49,6 @@ class SatNode:
                     bdic.setdefault(b, set([])).add(kn)
                 vk2dic[kn] = vk12
                 Center.add_vk2(vk12)
-        # display_vkdic(show_vkdic)
         self.layer = Layer(self.bgrid, vk2dic, bdic, block_bv_dic)
         Center.tailbits = Center.tailbits - self.layer.bgrid.bitset
         self.find_overlapped_vks()
@@ -91,16 +89,6 @@ class SatNode:
             nv += 3
         x = 8
 
-    def heads_schwanz(self):
-        head = set([])
-        schwanz = set(self.layer.vk2dic)
-        for vd in self.layer.blbmgr.cbdic.values():
-            for kn in vd:
-                head.add(kn)
-                if kn in schwanz:
-                    schwanz.remove(kn)
-        return head, schwanz
-
     def spawn(self):
         if len(self.vkm.vkdic) > 0:
             # as long as there exist vk3 in self.vkm.vkdic, go next (nov -= 3)
@@ -112,9 +100,6 @@ class SatNode:
             Center.minnov = self.nov
             nv = Center.maxnov
             while nv >= self.nov:
-                hd, swz = Center.snodes[nv].heads_schwanz()
-                print(f"{nv}-heads: {hd}")
-                print(f"{nv}-schwz: {swz}")
                 layer = Center.snodes[nv].layer
                 layer.bchecker.build_checkdic()
                 Center.add_blocks(nv, layer.bchecker)
@@ -123,13 +108,3 @@ class SatNode:
             pfinder = PathFinder()
             return pfinder.sats
             
-
-    def path_sat(self, pname):
-        sat = {}
-        secs = pname.split('-')
-        for sec in secs:
-            pair = sec.split('.')
-            snode = Center.snodes[int(pair[0])]
-            snv_sat = snode.bgrid.grid_sat(int(pair[1]))
-            sat.update(snv_sat)
-        return sat

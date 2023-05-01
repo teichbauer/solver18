@@ -1,3 +1,6 @@
+## 2023-05-01->0.427
+- clean up some. Total run timeis 0.21 sec finding 12 sats
+- need to make sure duplicated not be collected.
 ## 2023-05-01->0.426
 - collected all sat. But why are there 12?
 ## 2023-04-30->0.425
