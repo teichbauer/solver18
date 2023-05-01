@@ -1,3 +1,5 @@
+## 2023-05-01->0.426
+- collected all sat. But why are there 12?
 ## 2023-04-30->0.425
 - outer/higher level coding for collecting sats, in pathfinder.py
 - doc describing how solver18 works: docs/how_solver18_works.md

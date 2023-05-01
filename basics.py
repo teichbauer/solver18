@@ -232,3 +232,30 @@ def print_bitdic(bdic):
     bs = sorted(bdic)
     for b in bs:
         print(f"{b}: {bdic[b]}")
+
+def bits_combo_dics(bits, dics=[]):
+    # bits: {11,22}, or [11,22]
+    # return: [{22:0, 11:0},{22:0,11:1},{22:1,11:0},{22:1,11:1}]
+    while len(bits) > 0:
+        b = bits.pop()
+        if len(dics) == 0:
+            dics.append({b:0})
+            dics.append({b:1})
+            return bits_combo_dics(bits, dics)
+        else:
+            lst = []
+            while len(dics) > 0:
+                od = dics.pop()
+                d = od.copy()
+                d[b] = 0
+                lst.append(d)
+                d = od.copy()
+                d[b] = 1
+                lst.append(d)
+            return bits_combo_dics(bits, lst)
+    return dics        
+
+            
+if __name__ == '__main__':
+    res = bits_combo_dics({33,11,22})
+    print(res)

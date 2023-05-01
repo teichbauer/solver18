@@ -1,6 +1,6 @@
 from center import Center
 from cluster import Cluster
-from basics import sortdic, print_bitdic, print_clause_dic, my_setdiff
+from basics import sortdic, print_bitdic, my_setdiff, bits_combo_dics
 
 class PathFinder:
     def __init__(self):
@@ -9,7 +9,8 @@ class PathFinder:
             layer.bchecker.make_cvsats()
             # msg = layer.bchecker.show_cvsats(layer.cvsats)
         clupool = self.grow_pair_pool(60)
-        self.sats = self.search(clupool, Center.layers[54])        
+        self.sats = []
+        self.search(clupool, Center.layers[54])        
 
     def grow_pair_pool(self, hnv):  # paring layers: high-nov to lower-nov
         pair_pool = []
@@ -101,10 +102,20 @@ class PathFinder:
                 L = 'H'
             print(f"{m} <=> {ssat}  : {L}")
             x = 0
-        sats = [cluster.sat.copy()]
-        rest_bits = Center.bits.difference(sats[0])
-        return self.make_sats(sats, vk2s, rest_bits)
+        rest_bits = Center.bits.difference(cluster.sat)
+        self.make_sats(cluster.sat.copy(), vk2s, rest_bits)
+        return 
 
-    def make_sats(sats, vk2s, bits):
-        return sats
+    def make_sats(self, sat, vk2s, bits):
+        free_dics = bits_combo_dics(bits)
+        for sdic in free_dics:
+            for vk in vk2s:
+                if not vk.hit(sdic):
+                    break
+            ss = sat.copy()
+            ss.update(sdic)
+            self.sats.append(ss)
+        x = 9
+
+
 
