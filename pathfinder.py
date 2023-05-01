@@ -34,8 +34,28 @@ class PathFinder:
             #  (45, 4), (42, 7), (39, 0), (36, 2), (33, 0), 
             #  (30, 7), (27, 5), (24, 7), (21, 6)]:
             # if cluster.name == [(60, 1), (57, 4), (54, 2), (51, 1)]:
+            vk3s = [Center.orig_vkm.vkdic['C0068'],
+                    Center.orig_vkm.vkdic['C0139'],
+                    Center.orig_vkm.vkdic['C0181'],
+                    Center.orig_vkm.vkdic['C0195']]
+            # if cluster.name == [(60, 1), (57, 4), (54, 2), (51, 1), (48, 5), (45, 4), (42, 7), (39, 0)]:
+            # hit -> True
+            # if cluster.name == [(60, 1), (57, 4), (54, 2), (51, 1), (48, 5), (45, 4), (42, 7)]:
+            # hit -> True C0139 {9: 1, 38: 1, 39: 0}
+            if cluster.name == [(60, 1), (57, 4), (54, 2), (51, 1), (48, 5), (45, 4)]:
+                hit = False
+                for vk3 in vk3s:
+                    hit = vk3.hit(cluster.sat)
+                    if hit:
+                        x = 99
+            if cluster.name == [(60, 1), (57, 4), (54, 2), (51, 1), (48, 5)]:
+                x = 0
+            if cluster.name == [(60, 1), (57, 4), (54, 2), (51, 1)]:
+                x = 0
             if cluster.name == [(60, 1), (57, 4), (54, 2)]:
                 x = 0
+
+            #  cluster.sat: {...,9:1, 39:0, ...}
             nv = cluster.nxt_nv
             if nv == -1:
                 self.collect_sats(cluster)

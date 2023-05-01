@@ -1,3 +1,11 @@
+## 2023-04-30->04.24
+- progress! fixed a bug in cluster.grow_layercv -> I missed to consider
+  the vk1 sats under lyr[cv], if exists. After this fix, I now have my first
+  sat under path of
+  [(60, 2), (57, 7), (54, 1), (51, 2), (48, 6), (45, 5), (42, 7), (39, 7), 
+   (36, 6), (33, 2), (30, 6), (27, 1), (24, 5), (21, 4)]
+   and the cluster has sat of length == 59. That means there is only 1 bit(26)
+  I now just need to add 26:0 and 26:1 to form 2 sats!
 ## 2023-04-25->0.423
 - get rid of cluster.block/,pblock
 - in the wrong sat with path:

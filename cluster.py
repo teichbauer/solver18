@@ -40,8 +40,8 @@ class Cluster(PathNode):
                     del self.bitdic[bit]
         
     def add_n2(self, n2, n2cv):
-        self.layer2 = n2.layer
-        self.nxt_nv = self.layer2.nov - 3
+        self.layers.append(n2.layer)
+        self.nxt_nv = n2.layer.nov - 3
 
         sat = n2.sat_dic(n2cv)
         if not self.add_sat(sat):
@@ -49,7 +49,7 @@ class Cluster(PathNode):
         for cl in n2.clauses.values():
             if not self.add_k2(cl):
                 return None
-        self.headsatbits = self.headsatbits.union(self.layer2.bgrid.bitset)
+        self.headsatbits = self.headsatbits.union(n2.layer.bgrid.bitset)
         rsat = {}
         for b,sv in self.sat.items():
             if b not in self.headsatbits:
@@ -107,7 +107,7 @@ class Cluster(PathNode):
             kns.update(lyr.bdic[b])
         for kn in kns:
             vk = lyr.vk2dic[kn]
-            tbits = sat_bs.intersection(vk.bits)
+            tbits = bs.intersection(vk.bits)
             if len(tbits) == 2:
                 if vk.hit(self.sat):
                     for cv in vk.cvs:
@@ -195,6 +195,11 @@ class Cluster(PathNode):
     def grow_layercv(self, lyr, cv, filters):
         cvn2 = lyr.cvn2s[cv]
         clu = self.clone()
+        clu.layers.append(lyr)
+        lyr_cv_sats = lyr.cvsats[cv].get('*',[])
+        for sat in lyr_cv_sats:
+            if not clu.add_sat(sat):
+                return False
         clu.headsatbits = self.headsatbits.union(lyr.bgrid.bitset)
         lyr_filter = {}
         for ftr in filters:
@@ -230,24 +235,8 @@ class Cluster(PathNode):
             clu.nxt_nv = -1
         return clu
         
-
     def body_sat(self):
         bits = set(self.sat) - self.headsatbits
         dset = {b: self.sat[b] for b in bits}
         return bits, dset
-
-    def test_sat(self, tsat):
-        for b, v in tsat.items():
-            assert(b in self.sat), "tsat not qualified"
-            if self.sat[b] != v:
-                if b in self.headsatbits:
-                    if b in self.layers[0].bgrid.bits:
-                        bgrid = self.layers[0].bgrid
-                        layer_nov = self.layers[0].nov
-                    else:
-                        bgrid = self.layer2.bgrid
-                        layer_nov = self.layer2.nov
-                    return True, (layer_nov, bgrid.bv2cvs(b, self.sat[b])[0])
-                return True, None
-        return False, None
 
