@@ -9,7 +9,7 @@ class PathFinder:
             layer.bchecker.make_cvsats()
             # msg = layer.bchecker.show_cvsats(layer.cvsats)
         clupool = self.grow_pair_pool(60)
-        self.search(clupool, Center.layers[54])        
+        self.sats = self.search(clupool, Center.layers[54])        
 
     def grow_pair_pool(self, hnv):  # paring layers: high-nov to lower-nov
         pair_pool = []
@@ -89,13 +89,22 @@ class PathFinder:
         return None
 
     def collect_sats(self,cluster):
+        vk2s = []
         for kn, vk3 in Center.orig_vkm.vkdic.items():
             bits = set(cluster.sat).intersection(vk3.bits)
             ssat = { b:cluster.sat[b] for b in bits }
+            if len(ssat) == 2:
+                vk2s.append(vk3)
             m = f"{kn}: {vk3.dic}\t"
             L = 'O'
             if vk3.hit(ssat):
                 L = 'H'
             print(f"{m} <=> {ssat}  : {L}")
             x = 0
-        x = 9
+        sats = [cluster.sat.copy()]
+        rest_bits = Center.bits.difference(sats[0])
+        return self.make_sats(sats, vk2s, rest_bits)
+
+    def make_sats(sats, vk2s, bits):
+        return sats
+

@@ -207,7 +207,9 @@ class Cluster(PathNode):
                 clu.remove_clause(ftr[1])
                 if ftr[2]:
                     if not clu.add_sat(ftr[2]):
-                        print(f"lyr({lyr.nov}-{cv})-cluster-kn:{ftr[1]}: sat:{ftr[2]}")
+                        print(
+                            f"lyr({lyr.nov}-{cv})-cluster-kn:{ftr[1]}: sat:{ftr[2]}"
+                        )
                         return False
             else:
                 lyr_filter[ftr[0]] = ftr[1]

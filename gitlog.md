@@ -1,4 +1,7 @@
-## 2023-04-30->04.24
+## 2023-04-30->0.425
+- outer/higher level coding for collecting sats, in pathfinder.py
+- doc describing how solver18 works: docs/how_solver18_works.md
+## 2023-04-30->0.424
 - progress! fixed a bug in cluster.grow_layercv -> I missed to consider
   the vk1 sats under lyr[cv], if exists. After this fix, I now have my first
   sat under path of

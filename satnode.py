@@ -121,8 +121,8 @@ class SatNode:
                 nv -= 3
 
             pfinder = PathFinder()
+            return pfinder.sats
             
-            x = 1
 
     def path_sat(self, pname):
         sat = {}
