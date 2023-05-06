@@ -136,6 +136,16 @@ def vkdic_remove(vkdic, kns):
             kd[kn] = vk
     return kd
 
+def sat_diff(sat1, sat2):
+    diff_sat = {}
+    for b,v in sat1.items():
+        v2 = sat2.get(b, None)
+        if  v2!= v:
+            diff_sat[b] = (v, v2)
+    if len(diff_sat) == 0:
+        return None
+    return diff_sat
+
 def sortdic(d):
     ks = sorted(d)
     dd = {}
@@ -233,9 +243,11 @@ def print_bitdic(bdic):
     for b in bs:
         print(f"{b}: {bdic[b]}")
 
-def bits_combo_dics(bits, dics=[]):
+def bits_combo_dics(bits, dics=None):
     # bits: {11,22}, or [11,22]
     # return: [{22:0, 11:0},{22:0,11:1},{22:1,11:0},{22:1,11:1}]
+    if dics == None:
+        dics = []
     while len(bits) > 0:
         b = bits.pop()
         if len(dics) == 0:

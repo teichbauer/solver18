@@ -1,3 +1,5 @@
+## 2023-05-07->0.428
+- fixed the sat-duplicates issue. Now I only have 8 sats, which is right.
 ## 2023-05-01->0.427
 - clean up some. Total run timeis 0.21 sec finding 12 sats
 - need to make sure duplicated not be collected.
