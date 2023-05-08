@@ -59,8 +59,7 @@ def work(configfilename, verify=True):
         print(m)
     print(f"Time used: {time_used}")
 
-
-if __name__ == "__main__":
+def main():
     # configfilename = 'cfg100-450.json'
     configfilename = "cfg60-266.json"
     # configfilename = 'cfg60-280.json'
@@ -75,3 +74,6 @@ if __name__ == "__main__":
     work(configfilename)
 
     x = 1
+
+if __name__ == "__main__":
+    main()

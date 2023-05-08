@@ -1,6 +1,6 @@
 from center import Center
 from cluster import Cluster
-from basics import sortdic, print_bitdic, sat_diff, bits_combo_dics
+from basics import sortdic, sat_diff, bits_combo_dics
 
 class PathFinder:
     def __init__(self):
@@ -37,8 +37,8 @@ class PathFinder:
                 continue
             # lyr = Center.layers[nv]
             cvdic = cluster.cvsats[nv]
-            # print("----------------")
-            # print(f"cluster:{cluster.name}-[{cvdic['cvs']}]")
+            print("----------------")
+            print(f"cluster:{cluster.name}-[{cvdic['cvs']}]")
             npool = []   # new pool for next layer
             for cv in cvdic['cvs']:
                 filters = cvdic.get(cv, [])
@@ -47,14 +47,12 @@ class PathFinder:
                 if clu:
                     lyrcv_sat = lyr.bgrid.grid_sat(cv)
                     lyrcv_sat_res = clu.add_sat(lyrcv_sat)
-                if clu and lyrcv_sat_res:
-                    # if clu.nxt_nv == -1:
-                    #     print(f"bottom: {clu.name}")
-                    # else:
-                    #     print(f"next-cvs:{clu.cvsats[nv - 3]['cvs']}")
-                    npool.append(clu)
-                # else:
-                #     print(f"lyr({nv}-{cv}) failed")
+                    if lyrcv_sat_res:
+                        npool.append(clu)
+                    else:
+                        print(f"fail: sat-conflict")
+                else:
+                    print(f"{cv}-th fail.")
             if nv > Center.minnov:
                 nxt_lyr = Center.layers[nv - 3]
             else:
@@ -95,13 +93,6 @@ class PathFinder:
             ss = sat.copy()
             ss.update(sdic)
             lst = self.sat_dic.setdefault(name_tpl,[])
-            for e in lst:
-                diff = sat_diff(e,ss)
-                if diff:
-                    print(f"2 sats found: {diff}")
-                else:
-                    print(f"duplicate.")
-                x = 9
             lst.append(ss)
             self.sats.append(ss)
         x = 9
@@ -117,6 +108,4 @@ class PathFinder:
                 return "sat: 2, 3"
             elif (27,5) in names:
                 return "sat: 6, 7"
-
-
 
