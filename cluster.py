@@ -31,13 +31,13 @@ class Cluster(PathNode):
         clu = Cluster(tuple(self.name), self)
         return clu
     
-    def remove_clause(self, kn):
-        if kn in self.clauses:
-            vk = self.clauses.pop(kn)
-            for bit in vk.bits:
-                self.bitdic[bit].remove(kn)
-                if len(self.bitdic[bit]) == 0:
-                    del self.bitdic[bit]
+    # def remove_clause(self, kn):
+    #     if kn in self.clauses:
+    #         vk = self.clauses.pop(kn)
+    #         for bit in vk.bits:
+    #             self.bitdic[bit].remove(kn)
+    #             if len(self.bitdic[bit]) == 0:
+    #                 del self.bitdic[bit]
         
     def add_n2(self, n2, n2cv):
         self.layers.append(n2.layer)
@@ -193,33 +193,11 @@ class Cluster(PathNode):
     # end of: ----- def build_cvsats(self, lyr):
 
     def grow_layercv(self, lyr, cv, filters):
-        cvn2 = lyr.cvn2s[cv]
         clu = self.clone()
+        clauses = clu.proc_filter(filters, lyr, cv)
+        if clauses == False:  # clauses can be [] -> not False
+            return False
         clu.layers.append(lyr)
-        lyr_cv_sats = lyr.cvsats[cv].get('*',[])
-        for sat in lyr_cv_sats:
-            if not clu.add_sat(sat):
-                return False
-        clu.headsatbits = self.headsatbits.union(lyr.bgrid.bitset)
-        lyr_filter = {}
-        for ftr in filters:
-            if ftr[0] == 'cluster':
-                clu.remove_clause(ftr[1])
-                if ftr[2]:
-                    if not clu.add_sat(ftr[2]):
-                        # print(
-                        #     f"lyr({lyr.nov}-{cv})-cluster-kn:{ftr[1]}: sat:{ftr[2]}"
-                        # )
-                        return False
-            else:
-                lyr_filter[ftr[0]] = ftr[1]
-        clauses = cvn2.clauses.copy()
-        for kn, xsat in lyr_filter.items():
-            clauses.pop(kn, None)
-            if xsat:
-                if not clu.add_sat(xsat): 
-                    # print(f"failed:lyr({lyr.nov}-{cv})-kn:{kn}: sat:{xsat}")
-                    return False
         for kn, cl in clauses.items():
             if not clu.add_k2(cl):
                 # print(f"failed:lyr({lyr.nov}-{cv})-kn:{kn}")
@@ -237,8 +215,27 @@ class Cluster(PathNode):
             clu.nxt_nv = -1
         return clu
         
-    def body_sat(self):
-        bits = set(self.sat) - self.headsatbits
-        dset = {b: self.sat[b] for b in bits}
-        return bits, dset
+    def proc_filter(self, filters, lyr, cv):
+        lyr_cv_sats = lyr.cvsats[cv].get('*',[])
+        for sat in lyr_cv_sats:
+            if not self.add_sat(sat):
+                return False
+        self.headsatbits = self.headsatbits.union(lyr.bgrid.bitset)
+        lyr_filter = {}
+        for ftr in filters:
+            if ftr[0] == 'cluster':
+                self.remove_clause(ftr[1])
+                if ftr[2]:
+                    if not self.add_sat(ftr[2]):
+                        return False
+            else:
+                lyr_filter[ftr[0]] = ftr[1]
+        clauses = lyr.cvn2s[cv].clauses.copy()
+        for kn, xsat in lyr_filter.items():
+            clauses.pop(kn, None)
+            if xsat:
+                if not self.add_sat(xsat): 
+                    # print(f"failed:lyr({lyr.nov}-{cv})-kn:{kn}: sat:{xsat}")
+                    return False
+        return clauses
 

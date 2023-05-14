@@ -35,8 +35,12 @@ class PathFinder:
             if nv == -1:
                 self.collect_sats(cluster)
                 continue
-            # lyr = Center.layers[nv]
             cvdic = cluster.cvsats[nv]
+            #=================================
+            if cluster.name == \
+                [(60, 2), (57, 7), (54, 1), (51, 2), (48, 6), (45, 5), (42, 7)]:
+                x = 99
+            #=================================
             print("----------------")
             print(f"cluster:{cluster.name}-[{cvdic['cvs']}]")
             npool = []   # new pool for next layer
@@ -82,8 +86,6 @@ class PathFinder:
     def make_sats(self, name_tpl, sat, vk2s, bits):
         free_dics = bits_combo_dics(bits.copy())
         print(f"Collecting for {name_tpl}")
-        print(self.sat_name(name_tpl))
-        x = 0
         for sdic in free_dics:
             for vk in vk2s:
                 inbit = bits.intersection(vk.bits).pop()
@@ -96,16 +98,3 @@ class PathFinder:
             lst.append(ss)
             self.sats.append(ss)
         x = 9
-
-    def sat_name(self, names):
-        if (45,5) in names:
-            if (27,1) in names:
-                return "sat: 0, 1"
-            elif (27,5) in names:
-                return "sat: 4, 5"
-        elif (45,7) in names:
-            if (27,1) in names:
-                return "sat: 2, 3"
-            elif (27,5) in names:
-                return "sat: 6, 7"
-

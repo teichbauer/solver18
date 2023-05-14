@@ -1,6 +1,6 @@
 import sys
 import time
-from basics import get_sdic, ordered_dic_string, verify_sat, display_vkdic
+from basics import get_sdic, ordered_dic_string, verify_sat
 from center import Center
 from satholder import SatHolder
 from satnode import SatNode

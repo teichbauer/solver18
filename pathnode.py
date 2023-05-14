@@ -12,6 +12,14 @@ class PathNode:
         p.clauses = self.clauses.copy()
         p.sat = self.sat.copy()
         return p
+    
+    def remove_clause(self, kn):
+        if kn in self.clauses:
+            vk = self.clauses.pop(kn)
+            for bit in vk.bits:
+                self.bitdic[bit].remove(kn)
+                if len(self.bitdic[bit]) == 0:
+                    del self.bitdic[bit]
 
     def add_k2(self, vk):  # vk can be clause, or vklause
         dic = vk.dic.copy()
